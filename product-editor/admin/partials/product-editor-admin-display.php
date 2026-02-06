@@ -4,7 +4,7 @@
  *
  * This file is used to markup the admin-facing aspects of the plugin.
  *
- * @link       https://github.com/dev-hedgehog/product-editor
+ * @link       https://github.com/speitzako-app/product-editor
  * @since      1.0.0
  *
  * @package    Product-Editor
@@ -125,6 +125,88 @@ foreach ( General_Helper::get_var( 'search_include_taxonomies', [], FILTER_SANIT
 </div>
 <div class="wrap product-editor">
 	<h1 class="wp-heading-inline"><?php esc_html_e( 'Product Editor', 'product-editor' ); ?></h1>
+
+	<?php
+	// Promo banner for free users
+	$is_free_user = function_exists( 'pe_fs' ) && ! pe_fs()->can_use_premium_code();
+	if ( $is_free_user ) :
+	?>
+	<div class="pe-editor-promo-banner">
+		<div class="pe-promo-left">
+			<span class="pe-promo-badge">🎁 <?php esc_html_e( 'Limited Offer', 'product-editor' ); ?></span>
+			<span class="pe-promo-text"><?php esc_html_e( 'Get 15% off Premium with code', 'product-editor' ); ?> <code>PROMO15</code></span>
+		</div>
+		<div class="pe-promo-right">
+			<a href="<?php echo esc_url( pe_fs()->get_upgrade_url() ); ?>" class="pe-promo-cta" target="_blank">
+				<?php esc_html_e( 'Upgrade Now', 'product-editor' ); ?> →
+			</a>
+		</div>
+	</div>
+	<style>
+	.pe-editor-promo-banner {
+		background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+		color: #fff;
+		padding: 12px 20px;
+		border-radius: 8px;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		margin: 15px 0;
+		flex-wrap: wrap;
+		gap: 10px;
+		box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+	}
+	.pe-promo-left {
+		display: flex;
+		align-items: center;
+		gap: 15px;
+		flex-wrap: wrap;
+	}
+	.pe-promo-badge {
+		background: rgba(255,255,255,0.2);
+		padding: 5px 12px;
+		border-radius: 20px;
+		font-size: 12px;
+		font-weight: 600;
+	}
+	.pe-promo-text {
+		font-size: 14px;
+	}
+	.pe-promo-text code {
+		background: #fff;
+		color: #764ba2;
+		padding: 3px 8px;
+		border-radius: 4px;
+		font-weight: bold;
+		margin-left: 5px;
+	}
+	.pe-promo-cta {
+		background: #fff;
+		color: #667eea !important;
+		padding: 10px 20px;
+		border-radius: 5px;
+		text-decoration: none;
+		font-weight: 600;
+		transition: all 0.3s ease;
+		white-space: nowrap;
+	}
+	.pe-promo-cta:hover {
+		transform: translateY(-2px);
+		box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+		color: #764ba2 !important;
+	}
+	@media (max-width: 600px) {
+		.pe-editor-promo-banner {
+			flex-direction: column;
+			text-align: center;
+		}
+		.pe-promo-left {
+			flex-direction: column;
+		}
+	}
+	</style>
+	<?php endif; ?>
+
 	<div class="ajax-info">
 		<div class="inner"></div>
 	</div>
@@ -338,6 +420,7 @@ foreach ( General_Helper::get_var( 'search_include_taxonomies', [], FILTER_SANIT
                 </select>
 				<input type="text" class="date-picker" name="_sale_date_to" value="" placeholder="<?php esc_html_e( 'To&hellip;', 'product-editor' ); ?> YYYY-MM-DD" maxlength="10" pattern="[0-9]{4}-(0[1-9]|1[012])-(0[1-9]|1[0-9]|2[0-9]|3[01])" autocomplete="off">
 			</div>
+
             <div class="form-group">
                 <label>
                     <span class="title"><?php esc_html_e( 'Tags:', 'product-editor' ); ?></span>&nbsp;
@@ -350,6 +433,138 @@ foreach ( General_Helper::get_var( 'search_include_taxonomies', [], FILTER_SANIT
                 </select>
                 <input type="text" name="_tags" class="selectTagsEdit" />
             </div>
+
+            <!-- Quick Discount - PREMIUM FEATURE -->
+            <?php $is_premium = Product_Editor_License::can_use_advanced_features(); ?>
+            <div class="form-group pe-premium-field pe-quick-discount <?php echo ! $is_premium ? 'pe-premium-locked' : ''; ?>">
+                <label>
+                    <span class="title"><?php esc_html_e( 'Quick Discount:', 'product-editor' ); ?></span>
+                    <?php if ( ! $is_premium ): ?>
+                        <span class="pe-premium-badge">⭐ PREMIUM</span>
+                    <?php endif; ?>
+                </label>
+                <div class="pe-quick-discount-fields">
+                    <select name="change_quick_discount" <?php echo ! $is_premium ? 'disabled' : ''; ?>>
+                        <option value=""><?php esc_html_e( '— No change —', 'product-editor' ); ?></option>
+                        <option value="1"><?php esc_html_e( 'Apply discount', 'product-editor' ); ?></option>
+                    </select>
+                    <input type="number" name="_quick_discount_percent" min="1" max="99" step="1" placeholder="<?php esc_attr_e( '% off', 'product-editor' ); ?>" <?php echo ! $is_premium ? 'disabled' : ''; ?>>
+                    <span class="pe-discount-separator"><?php esc_html_e( 'from', 'product-editor' ); ?></span>
+                    <input type="text" class="date-picker" name="_quick_discount_from" placeholder="<?php esc_attr_e( 'Start date', 'product-editor' ); ?>" maxlength="10" pattern="[0-9]{4}-(0[1-9]|1[012])-(0[1-9]|1[0-9]|2[0-9]|3[01])" autocomplete="off" <?php echo ! $is_premium ? 'disabled' : ''; ?>>
+                    <span class="pe-discount-separator"><?php esc_html_e( 'to', 'product-editor' ); ?></span>
+                    <input type="text" class="date-picker" name="_quick_discount_to" placeholder="<?php esc_attr_e( 'End date', 'product-editor' ); ?>" maxlength="10" pattern="[0-9]{4}-(0[1-9]|1[012])-(0[1-9]|1[0-9]|2[0-9]|3[01])" autocomplete="off" <?php echo ! $is_premium ? 'disabled' : ''; ?>>
+                </div>
+                <?php if ( ! $is_premium ): ?>
+                    <p class="pe-premium-hint"><?php esc_html_e( '🚀 Create scheduled promotions in one click!', 'product-editor' ); ?></p>
+                <?php endif; ?>
+            </div>
+
+            <!-- Stock Management - PREMIUM FEATURE -->
+            <?php $is_premium = Product_Editor_License::can_use_advanced_features(); ?>
+            <div class="form-group pe-premium-field <?php echo ! $is_premium ? 'pe-premium-locked' : ''; ?>">
+                <label>
+                    <span class="title"><?php esc_html_e( 'Stock Quantity:', 'product-editor' ); ?></span>
+                    <?php if ( ! $is_premium ): ?>
+                        <span class="pe-premium-badge">⭐ PREMIUM</span>
+                    <?php endif; ?>
+                </label>
+                <select class="" name="change_stock_quantity" <?php echo ! $is_premium ? 'disabled' : ''; ?>>
+                    <option value=""><?php esc_html_e( '— No change —', 'product-editor' ); ?></option>
+                    <option value="1"><?php esc_html_e( 'Set to:', 'product-editor' ); ?></option>
+                    <option value="2"><?php esc_html_e( 'Increase by:', 'product-editor' ); ?></option>
+                    <option value="3"><?php esc_html_e( 'Decrease by:', 'product-editor' ); ?></option>
+                </select>
+                <input type="number" name="_stock_quantity" step="1" autocomplete="off" <?php echo ! $is_premium ? 'disabled placeholder="' . esc_attr__( 'Premium Feature', 'product-editor' ) . '"' : ''; ?>>
+            </div>
+
+            <div class="form-group pe-premium-field <?php echo ! $is_premium ? 'pe-premium-locked' : ''; ?>">
+                <label>
+                    <span class="title"><?php esc_html_e( 'Stock Status:', 'product-editor' ); ?></span>
+                    <?php if ( ! $is_premium ): ?>
+                        <span class="pe-premium-badge">⭐ PREMIUM</span>
+                    <?php endif; ?>
+                </label>
+                <select class="" name="change_stock_status" <?php echo ! $is_premium ? 'disabled' : ''; ?>>
+                    <option value=""><?php esc_html_e( '— No change —', 'product-editor' ); ?></option>
+                    <option value="1"><?php esc_html_e( 'Set to:', 'product-editor' ); ?></option>
+                </select>
+                <select name="_stock_status" <?php echo ! $is_premium ? 'disabled' : ''; ?>>
+                    <option value="instock"><?php esc_html_e( 'In stock', 'product-editor' ); ?></option>
+                    <option value="outofstock"><?php esc_html_e( 'Out of stock', 'product-editor' ); ?></option>
+                    <option value="onbackorder"><?php esc_html_e( 'On backorder', 'product-editor' ); ?></option>
+                </select>
+            </div>
+
+            <div class="form-group pe-premium-field <?php echo ! $is_premium ? 'pe-premium-locked' : ''; ?>">
+                <label>
+                    <span class="title"><?php esc_html_e( 'Manage Stock:', 'product-editor' ); ?></span>
+                    <?php if ( ! $is_premium ): ?>
+                        <span class="pe-premium-badge">⭐ PREMIUM</span>
+                    <?php endif; ?>
+                </label>
+                <select class="" name="change_manage_stock" <?php echo ! $is_premium ? 'disabled' : ''; ?>>
+                    <option value=""><?php esc_html_e( '— No change —', 'product-editor' ); ?></option>
+                    <option value="1"><?php esc_html_e( 'Set to:', 'product-editor' ); ?></option>
+                </select>
+                <select name="_manage_stock" <?php echo ! $is_premium ? 'disabled' : ''; ?>>
+                    <option value="1"><?php esc_html_e( 'Yes', 'product-editor' ); ?></option>
+                    <option value="0"><?php esc_html_e( 'No', 'product-editor' ); ?></option>
+                </select>
+            </div>
+
+            <!-- Categories - PREMIUM -->
+            <div class="form-group pe-premium-field <?php echo ! $is_premium ? 'pe-premium-locked' : ''; ?>">
+                <label>
+                    <span class="title"><?php esc_html_e( 'Categories:', 'product-editor' ); ?></span>
+                    <?php if ( ! $is_premium ): ?>
+                        <span class="pe-premium-badge">⭐ PREMIUM</span>
+                    <?php endif; ?>
+                </label>
+                <select class="" name="change_categories" <?php echo ! $is_premium ? 'disabled' : ''; ?>>
+                    <option value=""><?php esc_html_e( '— No change —', 'product-editor' ); ?></option>
+                    <option value="1"><?php esc_html_e( 'Set (replace):', 'product-editor' ); ?></option>
+                    <option value="2"><?php esc_html_e( 'Add:', 'product-editor' ); ?></option>
+                    <option value="3"><?php esc_html_e( 'Remove:', 'product-editor' ); ?></option>
+                </select>
+                <input type="text" name="_categories" class="selectCategoriesEdit" <?php echo ! $is_premium ? 'disabled placeholder="' . esc_attr__( 'Premium Feature', 'product-editor' ) . '"' : ''; ?> />
+            </div>
+
+            <!-- SKU - PREMIUM -->
+            <div class="form-group pe-premium-field <?php echo ! $is_premium ? 'pe-premium-locked' : ''; ?>">
+                <label>
+                    <span class="title"><?php esc_html_e( 'SKU:', 'product-editor' ); ?></span>
+                    <?php if ( ! $is_premium ): ?>
+                        <span class="pe-premium-badge">⭐ PREMIUM</span>
+                    <?php endif; ?>
+                </label>
+                <select class="" name="change_sku" <?php echo ! $is_premium ? 'disabled' : ''; ?>>
+                    <option value=""><?php esc_html_e( '— No change —', 'product-editor' ); ?></option>
+                    <option value="1"><?php esc_html_e( 'Set to:', 'product-editor' ); ?></option>
+                    <option value="2"><?php esc_html_e( 'Add prefix:', 'product-editor' ); ?></option>
+                    <option value="3"><?php esc_html_e( 'Add suffix:', 'product-editor' ); ?></option>
+                    <option value="4"><?php esc_html_e( 'Find and replace:', 'product-editor' ); ?></option>
+                </select>
+                <input type="text" name="_sku" placeholder="<?php echo ! $is_premium ? esc_attr__( 'Premium Feature', 'product-editor' ) : esc_attr__( 'New value', 'product-editor' ); ?>" autocomplete="off" <?php echo ! $is_premium ? 'disabled' : ''; ?>>
+                <input type="text" name="_sku_find" placeholder="<?php esc_attr_e( 'Find (for replace)', 'product-editor' ); ?>" autocomplete="off" <?php echo ! $is_premium ? 'disabled' : ''; ?>>
+            </div>
+
+            <!-- Weight - PREMIUM -->
+            <div class="form-group pe-premium-field <?php echo ! $is_premium ? 'pe-premium-locked' : ''; ?>">
+                <label>
+                    <span class="title"><?php esc_html_e( 'Weight:', 'product-editor' ); ?></span>
+                    <?php if ( ! $is_premium ): ?>
+                        <span class="pe-premium-badge">⭐ PREMIUM</span>
+                    <?php endif; ?>
+                </label>
+                <select class="" name="change_weight" <?php echo ! $is_premium ? 'disabled' : ''; ?>>
+                    <option value=""><?php esc_html_e( '— No change —', 'product-editor' ); ?></option>
+                    <option value="1"><?php esc_html_e( 'Set to:', 'product-editor' ); ?></option>
+                    <option value="2"><?php esc_html_e( 'Increase by:', 'product-editor' ); ?></option>
+                    <option value="3"><?php esc_html_e( 'Decrease by:', 'product-editor' ); ?></option>
+                </select>
+                <input type="number" name="_weight" step="0.01" autocomplete="off" <?php echo ! $is_premium ? 'disabled placeholder="' . esc_attr__( 'Premium Feature', 'product-editor' ) . '"' : ''; ?>>
+            </div>
+
             <div class="form-group">
                 <label>
                     <input type="checkbox" name="not_processing_zero_price_products">
@@ -454,6 +669,18 @@ foreach ( General_Helper::get_var( 'search_include_taxonomies', [], FILTER_SANIT
             <th scope="col" class="td-tags manage-column">
 				<span><?php esc_html_e( 'Tags', 'product-editor' ); ?></span>
 			</th>
+			<th scope="col" class="td-stock-quantity manage-column">
+				<span><?php esc_html_e( 'Stock', 'product-editor' ); ?></span>
+			</th>
+			<th scope="col" class="td-stock-status manage-column">
+				<span><?php esc_html_e( 'Stock Status', 'product-editor' ); ?></span>
+			</th>
+			<th scope="col" class="td-categories manage-column">
+				<span><?php esc_html_e( 'Categories', 'product-editor' ); ?></span>
+			</th>
+			<th scope="col" class="td-weight manage-column">
+				<span><?php esc_html_e( 'Weight', 'product-editor' ); ?></span>
+			</th>
 
 		</tr>
 		</thead>
@@ -464,3 +691,400 @@ foreach ( General_Helper::get_var( 'search_include_taxonomies', [], FILTER_SANIT
 		</tbody>
 	</table>
 </div>
+
+<!-- Modal Upgrade CTA -->
+<div id="pe-upgrade-modal" class="pe-modal" style="display:none;">
+	<div class="pe-modal-overlay"></div>
+	<div class="pe-modal-content">
+		<button class="pe-modal-close">&times;</button>
+		<div class="pe-modal-icon">🚀</div>
+		<h2><?php esc_html_e( 'Unlock Unlimited Editing!', 'product-editor' ); ?></h2>
+		<p class="pe-modal-subtitle"><?php esc_html_e( 'You\'ve reached the 50 product limit for free users.', 'product-editor' ); ?></p>
+
+		<div class="pe-modal-promo">
+			<span class="pe-promo-gift">🎁</span>
+			<div>
+				<strong><?php esc_html_e( 'Special Offer!', 'product-editor' ); ?></strong><br>
+				<?php esc_html_e( 'Get 15% off with code', 'product-editor' ); ?> <code>PROMO15</code>
+			</div>
+		</div>
+
+		<ul class="pe-modal-features">
+			<li><span class="dashicons dashicons-yes-alt"></span> <?php esc_html_e( 'Unlimited bulk editing', 'product-editor' ); ?></li>
+			<li><span class="dashicons dashicons-yes-alt"></span> <?php esc_html_e( 'Schedule price changes', 'product-editor' ); ?></li>
+			<li><span class="dashicons dashicons-yes-alt"></span> <?php esc_html_e( '50 undo operations', 'product-editor' ); ?></li>
+			<li><span class="dashicons dashicons-yes-alt"></span> <?php esc_html_e( 'Priority support', 'product-editor' ); ?></li>
+		</ul>
+
+		<a href="<?php echo esc_url( Product_Editor_License::get_upgrade_url() ); ?>" class="pe-modal-cta" target="_blank">
+			<?php esc_html_e( 'Upgrade Now & Save 15%', 'product-editor' ); ?> →
+		</a>
+		<p class="pe-modal-guarantee"><?php esc_html_e( '30-day money-back guarantee', 'product-editor' ); ?></p>
+	</div>
+</div>
+
+<!-- Modal Review Request -->
+<div id="pe-review-modal" class="pe-modal" style="display:none;">
+	<div class="pe-modal-overlay"></div>
+	<div class="pe-modal-content pe-review-content">
+		<button class="pe-modal-close">&times;</button>
+		<div class="pe-modal-icon">💜</div>
+		<h2><?php esc_html_e( 'Enjoying Product Editor?', 'product-editor' ); ?></h2>
+		<p class="pe-modal-subtitle"><?php esc_html_e( 'Your feedback helps us improve and helps other store owners find us!', 'product-editor' ); ?></p>
+
+		<div class="pe-review-stars" id="pe-review-stars">
+			<span class="pe-star" data-rating="1">★</span>
+			<span class="pe-star" data-rating="2">★</span>
+			<span class="pe-star" data-rating="3">★</span>
+			<span class="pe-star" data-rating="4">★</span>
+			<span class="pe-star" data-rating="5">★</span>
+		</div>
+		<p class="pe-review-hint"><?php esc_html_e( 'Click to rate', 'product-editor' ); ?></p>
+
+		<div class="pe-review-actions" style="display:none;">
+			<a href="https://wordpress.org/support/plugin/product-editor/reviews/#new-post" class="pe-modal-cta pe-review-go" target="_blank">
+				<?php esc_html_e( 'Leave a Review on WordPress.org', 'product-editor' ); ?> →
+			</a>
+			<button class="pe-review-later"><?php esc_html_e( 'Maybe later', 'product-editor' ); ?></button>
+		</div>
+
+		<div class="pe-review-feedback" style="display:none;">
+			<p><?php esc_html_e( 'We\'re sorry to hear that! How can we improve?', 'product-editor' ); ?></p>
+			<textarea id="pe-feedback-text" placeholder="<?php esc_attr_e( 'Tell us what\'s not working for you...', 'product-editor' ); ?>"></textarea>
+			<button class="button button-primary pe-send-feedback"><?php esc_html_e( 'Send Feedback', 'product-editor' ); ?></button>
+			<button class="pe-review-later"><?php esc_html_e( 'No thanks', 'product-editor' ); ?></button>
+		</div>
+	</div>
+</div>
+
+<style>
+/* Modal Styles */
+.pe-modal {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	z-index: 999999;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.pe-modal-overlay {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background: rgba(0, 0, 0, 0.7);
+	backdrop-filter: blur(3px);
+}
+
+.pe-modal-content {
+	position: relative;
+	background: #fff;
+	padding: 40px;
+	border-radius: 12px;
+	max-width: 480px;
+	width: 90%;
+	text-align: center;
+	box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+	animation: peModalSlideIn 0.3s ease;
+}
+
+@keyframes peModalSlideIn {
+	from {
+		opacity: 0;
+		transform: translateY(-30px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+.pe-modal-close {
+	position: absolute;
+	top: 15px;
+	right: 15px;
+	background: none;
+	border: none;
+	font-size: 24px;
+	cursor: pointer;
+	color: #999;
+	width: 30px;
+	height: 30px;
+	line-height: 30px;
+	padding: 0;
+}
+
+.pe-modal-close:hover {
+	color: #333;
+}
+
+.pe-modal-icon {
+	font-size: 50px;
+	margin-bottom: 15px;
+}
+
+.pe-modal-content h2 {
+	margin: 0 0 10px;
+	font-size: 24px;
+	color: #1d2327;
+}
+
+.pe-modal-subtitle {
+	color: #666;
+	margin: 0 0 20px;
+	font-size: 15px;
+}
+
+.pe-modal-promo {
+	background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+	color: #fff;
+	padding: 12px 20px;
+	border-radius: 8px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 12px;
+	margin-bottom: 20px;
+}
+
+.pe-modal-promo .pe-promo-gift {
+	font-size: 24px;
+}
+
+.pe-modal-promo code {
+	background: #fff;
+	color: #ee5a24;
+	padding: 2px 8px;
+	border-radius: 4px;
+	font-weight: bold;
+}
+
+.pe-modal-features {
+	list-style: none;
+	padding: 0;
+	margin: 0 0 25px;
+	text-align: left;
+}
+
+.pe-modal-features li {
+	padding: 8px 0;
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	color: #333;
+}
+
+.pe-modal-features .dashicons {
+	color: #46b450;
+}
+
+.pe-modal-cta {
+	display: inline-block;
+	background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+	color: #fff !important;
+	padding: 15px 35px;
+	border-radius: 8px;
+	text-decoration: none;
+	font-weight: 600;
+	font-size: 16px;
+	transition: all 0.3s ease;
+	box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.pe-modal-cta:hover {
+	transform: translateY(-2px);
+	box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+	color: #fff;
+}
+
+.pe-modal-guarantee {
+	color: #888;
+	font-size: 13px;
+	margin: 15px 0 0;
+}
+
+/* Review Modal Specific */
+.pe-review-stars {
+	font-size: 40px;
+	margin: 20px 0 10px;
+	cursor: pointer;
+}
+
+.pe-star {
+	color: #ddd;
+	transition: color 0.2s, transform 0.2s;
+	display: inline-block;
+}
+
+.pe-star:hover,
+.pe-star.active {
+	color: #f0c14b;
+	transform: scale(1.1);
+}
+
+.pe-star.hover {
+	color: #f0c14b;
+}
+
+.pe-review-hint {
+	color: #999;
+	font-size: 13px;
+	margin: 0 0 20px;
+}
+
+.pe-review-actions {
+	margin-top: 20px;
+}
+
+.pe-review-later {
+	background: none;
+	border: none;
+	color: #999;
+	cursor: pointer;
+	margin-top: 15px;
+	font-size: 13px;
+	display: block;
+	width: 100%;
+}
+
+.pe-review-later:hover {
+	color: #666;
+}
+
+.pe-review-feedback textarea {
+	width: 100%;
+	min-height: 100px;
+	margin: 10px 0;
+	padding: 10px;
+	border: 1px solid #ddd;
+	border-radius: 5px;
+	resize: vertical;
+}
+
+.pe-send-feedback {
+	margin-top: 10px;
+}
+</style>
+
+<script>
+(function($) {
+	'use strict';
+
+	// Upgrade Modal Functions
+	window.peShowUpgradeModal = function() {
+		$('#pe-upgrade-modal').fadeIn(200);
+		$('body').css('overflow', 'hidden');
+	};
+
+	window.peHideUpgradeModal = function() {
+		$('#pe-upgrade-modal').fadeOut(200);
+		$('body').css('overflow', '');
+	};
+
+	// Close modal events
+	$('#pe-upgrade-modal .pe-modal-close, #pe-upgrade-modal .pe-modal-overlay').on('click', function() {
+		peHideUpgradeModal();
+	});
+
+	// Review Modal Functions
+	var reviewModalShown = localStorage.getItem('pe_review_shown');
+	var bulkOpsCount = parseInt(localStorage.getItem('pe_bulk_ops_count') || '0');
+
+	window.peIncrementBulkOps = function() {
+		bulkOpsCount++;
+		localStorage.setItem('pe_bulk_ops_count', bulkOpsCount);
+
+		// Show review modal after 5 successful operations (and not already shown)
+		if (bulkOpsCount >= 5 && !reviewModalShown) {
+			setTimeout(function() {
+				peShowReviewModal();
+			}, 1000);
+		}
+	};
+
+	window.peShowReviewModal = function() {
+		$('#pe-review-modal').fadeIn(200);
+		$('body').css('overflow', 'hidden');
+	};
+
+	window.peHideReviewModal = function() {
+		$('#pe-review-modal').fadeOut(200);
+		$('body').css('overflow', '');
+	};
+
+	// Review stars interaction
+	$('#pe-review-stars .pe-star').on('mouseenter', function() {
+		var rating = $(this).data('rating');
+		$('#pe-review-stars .pe-star').each(function() {
+			if ($(this).data('rating') <= rating) {
+				$(this).addClass('hover');
+			} else {
+				$(this).removeClass('hover');
+			}
+		});
+	});
+
+	$('#pe-review-stars').on('mouseleave', function() {
+		$('#pe-review-stars .pe-star').removeClass('hover');
+	});
+
+	$('#pe-review-stars .pe-star').on('click', function() {
+		var rating = $(this).data('rating');
+
+		// Mark as shown
+		localStorage.setItem('pe_review_shown', 'true');
+		reviewModalShown = true;
+
+		// Set active stars
+		$('#pe-review-stars .pe-star').each(function() {
+			if ($(this).data('rating') <= rating) {
+				$(this).addClass('active');
+			} else {
+				$(this).removeClass('active');
+			}
+		});
+
+		if (rating >= 4) {
+			// Good rating - show WordPress.org link
+			$('.pe-review-hint').hide();
+			$('.pe-review-feedback').hide();
+			$('.pe-review-actions').fadeIn();
+		} else {
+			// Low rating - show feedback form
+			$('.pe-review-hint').hide();
+			$('.pe-review-actions').hide();
+			$('.pe-review-feedback').fadeIn();
+		}
+	});
+
+	// Close review modal
+	$('#pe-review-modal .pe-modal-close, #pe-review-modal .pe-modal-overlay, .pe-review-later').on('click', function() {
+		peHideReviewModal();
+	});
+
+	// Send feedback
+	$('.pe-send-feedback').on('click', function() {
+		var feedback = $('#pe-feedback-text').val();
+		if (feedback.trim()) {
+			// Save feedback locally or send to server
+			console.log('Feedback:', feedback);
+			alert('<?php echo esc_js( __( 'Thank you for your feedback! We\'ll use it to improve.', 'product-editor' ) ); ?>');
+		}
+		peHideReviewModal();
+	});
+
+	// When user clicks review link
+	$('.pe-review-go').on('click', function() {
+		localStorage.setItem('pe_review_completed', 'true');
+		setTimeout(function() {
+			peHideReviewModal();
+		}, 500);
+	});
+
+})(jQuery);
+</script>

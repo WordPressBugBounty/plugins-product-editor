@@ -4,15 +4,57 @@
 	let isRequested = false;
 	let isProgressRequested = false;
 	let progressIntervalHandle = null;
+
+	// Configuration avancée du calendrier
 	let datepicker_options = {
 		dateFormat: 'yy-mm-dd',
 		showButtonPanel: true,
-		// Allow to click mouse at any position on a page no worries about click at a wrong place.
-		beforeShow: function () {
-			$('.product-editor').prepend('<div id="overlay_datepicker"></div>');
+		beforeShow: function (input, inst) {
+			// 1. Nettoyage préventif (au cas où un ancien overlay traîne)
+			$('#pe-datepicker-overlay, #pe-datepicker-style').remove();
+			
+			// 2. Injection de CSS pour forcer le calendrier au Premier Plan (Z-Index Extrême)
+			// C'est la clé : le !important garantit que le calendrier passe au-dessus de l'overlay
+			$('body').append('<style id="pe-datepicker-style">#ui-datepicker-div { z-index: 2147483647 !important; }</style>');
+			
+			// 3. Création de l'overlay de protection (juste en dessous du max)
+			var $overlay = $('<div id="pe-datepicker-overlay"></div>');
+			$overlay.css({
+				'position': 'fixed',
+				'top': 0,
+				'left': 0,
+				'width': '100vw',
+				'height': '100vh',
+				'z-index': 2147483646, // Un cran en dessous du calendrier
+				'background': 'transparent' // Invisible
+			});
+
+			$('body').append($overlay);
+			
+			// 4. Gestion du clic sur l'overlay (Clic à l'extérieur)
+			// On empêche Freemius de voir le clic, et on ferme le calendrier
+			$overlay.on('click', function(e) {
+				e.stopPropagation();
+				e.preventDefault();
+				try {
+					$(input).datepicker('hide');
+				} catch(err) {
+					$('.date-picker').datepicker('hide');
+				}
+			});
+
+			// 5. Isolation du calendrier
+			// On empêche les clics DANS le calendrier de remonter à Freemius
+			setTimeout(function() {
+				$('#ui-datepicker-div').off('click.fix_propagation').on('click.fix_propagation', function(e) {
+					e.stopPropagation();
+				});
+			}, 0);
 		},
 		onClose: function () {
-			$('#overlay_datepicker').remove();
+			// Nettoyage complet et garanti
+			$('#pe-datepicker-overlay').remove();
+			$('#pe-datepicker-style').remove();
 		}
 	};
 
@@ -20,6 +62,15 @@
 		if (!$('.product-editor').length) {
 			return;
 		}
+
+		// CORRECTIF SÉCURITÉ : Nettoyage des classes "locked" au chargement
+		// Cela permet d'éviter que le plugin ne "croie" qu'il est verrouillé à cause du cache
+		setTimeout(function() {
+			$('.pe-premium-field input:not([disabled])').each(function() {
+				$(this).closest('.pe-premium-locked').removeClass('pe-premium-locked');
+			});
+		}, 500);
+
 		$('.product-editor-loading').hide();
 
 		/** Stick Table header */
@@ -49,17 +100,12 @@
 
 		/**
 		 * Returns taxonomies that are not yet used for searching.
-		 * There are 2 types of taxonomies, those that should be present in the products and those that should not be there.
-		 * @param type 'include' | 'exclude'
 		 */
 		let not_selected_taxonomies = (type) =>
 			pe_data.search_taxonomies.list.filter((el) => !pe_data.search_taxonomies[type].find(taxName => taxName === el.name));
 
 		/**
 		 * Adds a selection item to the search interface for the specified taxonomy.
-         * @param name
-		 * @param label
-		 * @param type 'include' | 'exclude'
 		 */
 		function addSearchTaxonomy (name, label, type = 'include') {
 			let taxonomy = {name, label};
@@ -80,7 +126,6 @@
 			});
 			$tmplNode.find('.label').html(taxonomy.label);
 			$tmplNode.find('.taxonomy_selected_terms').attr('name', 'terms_'+type+'_tax_' + taxonomy.name)
-
 				.attr('value', searchParams.get('terms_'+type+'_tax_' + taxonomy.name));
 			$tmplNode.find('.taxonomy_selected_name').attr('name', 'search_'+type+'_taxonomies[]')
 			let form_data = new FormData();
@@ -118,7 +163,6 @@
 					return Promise.reject(response);
 				}).then(function (data) {
 					$('.lds-dual-ring').hide();
-					console.log(data);
 					pe_data.search_taxonomies.terms[taxonomy.name] = data.data;
 					init_select();
 				}).catch(function (error) {
@@ -132,7 +176,7 @@
 		}
 
 		/**
-		 * Initialization of selects lists of additional taxonomies received from the server
+		 * Initialization of selects lists
 		 */
 		(function() {
 			for(let tax_name of pe_data.search_taxonomies.include_from_server) {
@@ -290,7 +334,6 @@
 
 				return Promise.reject(response);
 			}).then(function (data) {
-				console.log(data);
 				showInfo(data.message, 3000);
 				data.content.forEach((el) => {
 					let $tr = $('tr[data-id="' + el.id + '"]');
@@ -305,7 +348,6 @@
 				$('.lds-dual-ring').hide();
 				form[0].reset();
 				form.find('.selectTagsEdit').selectPageClear();
-				// Reset round inputs
 				$('.change_to').trigger('change');
 				if (data.reverse) {
 					$('.do_reverse').show().data('id', data.reverse['id']).html(product_editor_object['str_undo'] + data.reverse['name']);
@@ -317,24 +359,19 @@
 				if (typeof error.json === "function") {
 					error.json().then(jsonError => {
 						alert(jsonError.message);
-						console.warn(jsonError);
 					}).catch(genericError => {
-						console.warn("Generic error from API");
 						alert(error.statusText);
 					});
 				} else {
-					console.warn("Fetch error");
-					console.warn(error);
 					alert('Error! ' + error);
 				}
 				form.find('input[type="submit"]').prop('disabled', false);
 				$('.lds-dual-ring').hide();
 			});
-			/** Get progress for process_id */
 			observe_progress_status(process_id);
 		});
 
-		/** Sends requests to track the progress of the request */
+		/** Sends requests to track the progress */
 		function observe_progress_status(process_id) {
 			if (progressIntervalHandle) {
 				return;
@@ -346,7 +383,6 @@
 					isProgressRequested = true;
 					$.get(pe_data.admin_post_url, {action: 'pe_get_progress', process_id: process_id})
 						.done(function (data) {
-							console.log('Progress: ', data, '%');
 							data = parseInt(data);
 							if (progressIntervalHandle) {
 								show_progress_bar(data);
@@ -356,7 +392,6 @@
 							}
 						})
 						.fail(function (error) {
-							console.log(error);
 							stop_observe_progress_status();
 						})
 						.always(function () {
@@ -527,7 +562,6 @@
 				})
 				.always(function () {
 				});
-			/** Get progress for process_id */
 			observe_progress_status(process_id);
 		});
 
@@ -630,7 +664,6 @@
 			}
 			return Promise.reject(response);
 		}).then(function (data) {
-			console.log(data);
 			showInfo(data.message);
 			data.content.forEach((el) => {
 				let $tr = $('tr[data-id="' + el.id + '"]');
@@ -646,19 +679,24 @@
 			if (data.reverse) {
 				$('.do_reverse').show().data('id', data.reverse['id']).html(product_editor_object['str_undo'] + data.reverse['name']);
 			}
+			// Track successful bulk operation for review prompt
+			if (typeof window.peIncrementBulkOps === 'function') {
+				window.peIncrementBulkOps();
+			}
 		}).catch(function (error) {
 			isRequested = false;
 			if (typeof error.json === "function") {
 				error.json().then(jsonError => {
-					alert(jsonError.message);
-					console.warn(jsonError);
+					// Check if this is a product limit error (403) - show upgrade modal
+					if (error.status === 403 && typeof window.peShowUpgradeModal === 'function') {
+						window.peShowUpgradeModal();
+					} else {
+						alert(jsonError.message);
+					}
 				}).catch(genericError => {
-					console.warn("Generic error from API");
 					alert(error.statusText);
 				});
 			} else {
-				console.warn("Fetch error");
-				console.warn(error);
 				alert('Error! ' + error);
 			}
 			form.find('input[type="submit"]').prop('disabled', false);

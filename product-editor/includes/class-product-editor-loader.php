@@ -3,7 +3,7 @@
 /**
  * Register all actions and filters for the plugin
  *
- * @link       https://github.com/dev-hedgehog/product-editor
+ * @link       https://github.com/speitzako-app/product-editor
  * @since      1.0.0
  *
  * @package    Product-Editor

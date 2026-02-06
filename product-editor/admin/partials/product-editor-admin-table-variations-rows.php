@@ -2,7 +2,7 @@
 /**
  * This file is a chunk that render rows of variations of a variable product
  *
- * @link       https://github.com/dev-hedgehog/product-editor
+ * @link       https://github.com/speitzako-app/product-editor
  * @since      1.0.0
  *
  * @package    Product-Editor
@@ -28,6 +28,11 @@ foreach ( $variation_ids as $variation_id ) {
 	$date_on_sale_from = $date_on_sale_from ? $date_on_sale_from->date( 'Y-m-d' ) : '';
 	$date_on_sale_to   = $var->get_date_on_sale_to( 'edit' );
 	$date_on_sale_to   = $date_on_sale_to ? $date_on_sale_to->date( 'Y-m-d' ) : '';
+
+	// Get stock data for variation
+	$stock_quantity = $var->get_stock_quantity( 'edit' );
+	$stock_status = $var->get_stock_status( 'edit' );
+	$weight = $var->get_weight( 'edit' );
 	?>
 	<tr class="variation-product"
 			data-id="<?php echo esc_attr( $variation_id ); ?>"
@@ -49,6 +54,10 @@ foreach ( $variation_ids as $variation_id ) {
 		<td class="td-date-on-sale-from editable"><?php echo esc_html( $date_on_sale_from ); ?></td>
 		<td class="td-date-on-sale-to editable"><?php echo esc_html( $date_on_sale_to ); ?></td>
         <td class="td-tags"></td>
+		<td class="td-stock-quantity editable"><?php echo esc_html( $stock_quantity !== null ? $stock_quantity : '' ); ?></td>
+		<td class="td-stock-status editable"><?php echo esc_html( $stock_status ); ?></td>
+		<td class="td-categories"></td>
+		<td class="td-weight editable"><?php echo esc_html( $weight ); ?></td>
 	</tr>
 
 	<?php

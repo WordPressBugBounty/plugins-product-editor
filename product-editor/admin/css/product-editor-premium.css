@@ -1,0 +1,435 @@
+/**
+ * Premium features styling
+ *
+ * @package Product-Editor
+ * @since 2.0.0
+ */
+
+/* Upgrade Banner Styles */
+.pe-upgrade-banner {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    padding: 20px 25px;
+    margin: 20px 0;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.pe-upgrade-banner-content {
+    flex: 1;
+}
+
+.pe-upgrade-banner h3 {
+    margin: 0 0 8px 0;
+    color: #fff;
+    font-size: 18px;
+}
+
+.pe-upgrade-banner p {
+    margin: 0;
+    opacity: 0.9;
+    font-size: 14px;
+}
+
+.pe-upgrade-banner-button {
+    background: #fff;
+    color: #667eea;
+    padding: 12px 30px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.pe-upgrade-banner-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    color: #667eea;
+}
+
+/* Premium Badge */
+.pe-premium-badge {
+    display: inline-flex;
+    align-items: center;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-left: 8px;
+    vertical-align: middle;
+}
+
+.pe-premium-badge::before {
+    content: "⭐";
+    margin-right: 4px;
+}
+
+/* Feature Lock Overlay */
+.pe-feature-locked {
+    position: relative;
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.pe-feature-locked::after {
+    content: "🔒 Premium Feature";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(102, 126, 234, 0.95);
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-weight: 600;
+    white-space: nowrap;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Inline Upgrade Notice */
+.pe-upgrade-notice {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #f0f6fc;
+    border: 2px solid #2271b1;
+    border-radius: 5px;
+    padding: 10px 15px;
+    margin: 10px 0;
+}
+
+.pe-upgrade-icon {
+    font-size: 20px;
+}
+
+.pe-upgrade-message {
+    flex: 1;
+    color: #2271b1;
+    font-weight: 500;
+}
+
+.pe-upgrade-button {
+    background: #2271b1;
+    color: #fff;
+    padding: 6px 16px;
+    border-radius: 3px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 13px;
+    transition: background 0.3s ease;
+}
+
+.pe-upgrade-button:hover {
+    background: #135e96;
+    color: #fff;
+}
+
+/* Product Limit Warning */
+.pe-limit-warning {
+    background: #fff3cd;
+    border-left: 4px solid #ffc107;
+    padding: 15px;
+    margin: 15px 0;
+    border-radius: 3px;
+}
+
+.pe-limit-warning strong {
+    color: #856404;
+}
+
+/* Premium Feature Tooltip */
+.pe-premium-tooltip {
+    position: relative;
+    display: inline-block;
+    cursor: help;
+}
+
+.pe-premium-tooltip:hover::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #333;
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 5px;
+    font-size: 12px;
+    white-space: nowrap;
+    z-index: 1000;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.pe-premium-tooltip:hover::before {
+    content: "";
+    position: absolute;
+    bottom: 115%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: #333;
+    z-index: 1000;
+}
+
+/* Schedule Task Section */
+.pe-schedule-section {
+    background: #fff;
+    border: 2px solid #2271b1;
+    border-radius: 8px;
+    padding: 20px;
+    margin: 20px 0;
+}
+
+.pe-schedule-section h3 {
+    margin-top: 0;
+    color: #2271b1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.pe-schedule-section h3::before {
+    content: "📅";
+    font-size: 24px;
+}
+
+.pe-schedule-form {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    gap: 15px;
+    align-items: end;
+}
+
+.pe-schedule-form .form-field {
+    display: flex;
+    flex-direction: column;
+}
+
+.pe-schedule-form label {
+    font-weight: 600;
+    margin-bottom: 5px;
+    color: #2c3338;
+}
+
+.pe-schedule-form input[type="text"],
+.pe-schedule-form input[type="datetime-local"] {
+    padding: 8px 12px;
+    border: 1px solid #8c8f94;
+    border-radius: 3px;
+    font-size: 14px;
+}
+
+.pe-schedule-form button {
+    padding: 10px 20px;
+    background: #2271b1;
+    color: #fff;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background 0.3s ease;
+}
+
+.pe-schedule-form button:hover {
+    background: #135e96;
+}
+
+/* Status Indicators */
+.pe-status {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 3px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.pe-status-free {
+    background: #f0f0f1;
+    color: #50575e;
+}
+
+.pe-status-premium {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+}
+
+/* Responsive adjustments */
+@media screen and (max-width: 782px) {
+    .pe-upgrade-banner {
+        flex-direction: column;
+        text-align: center;
+        gap: 15px;
+    }
+
+    .pe-schedule-form {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Animation for premium elements */
+@keyframes shimmer {
+    0% {
+        background-position: -1000px 0;
+    }
+    100% {
+        background-position: 1000px 0;
+    }
+}
+
+.pe-premium-shine {
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    background-size: 1000px 100%;
+    animation: shimmer 3s infinite;
+}
+
+/* Premium Field Styles */
+.pe-premium-field {
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.pe-premium-field.pe-premium-locked {
+    position: relative;
+    background: linear-gradient(135deg, #f8f9ff 0%, #f0f2ff 100%);
+    border: 2px solid #e0e5ff;
+    border-radius: 8px;
+    padding: 15px;
+    margin: 10px 0;
+}
+
+.pe-premium-field.pe-premium-locked:hover {
+    border-color: #667eea;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.15);
+}
+
+.pe-premium-field.pe-premium-locked input,
+.pe-premium-field.pe-premium-locked select {
+    opacity: 0.7;
+    cursor: not-allowed;
+    background: #f8f9ff;
+}
+
+/* Premium Badge in forms */
+.pe-premium-field .pe-premium-badge {
+    display: inline-flex;
+    align-items: center;
+    background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+    color: #333;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-left: 8px;
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
+    animation: pulse-gold 2s ease-in-out infinite;
+}
+
+@keyframes pulse-gold {
+    0%, 100% {
+        box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
+    }
+    50% {
+        box-shadow: 0 4px 16px rgba(255, 215, 0, 0.5);
+    }
+}
+
+/* Premium locked field click behavior */
+.pe-premium-field.pe-premium-locked {
+    cursor: pointer;
+}
+
+.pe-premium-field.pe-premium-locked:hover {
+    border-color: #667eea;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
+}
+
+/* Upgrade link for premium fields */
+.pe-upgrade-link {
+    display: inline-block;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    padding: 12px 24px;
+    border-radius: 25px;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 13px;
+    transition: all 0.3s ease;
+    margin-top: 10px;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.pe-premium-overlay-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    color: #fff;
+    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+}
+
+/* Premium locked fields - subtle hint without overlay showing */
+.pe-premium-locked::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, transparent 50%, rgba(255, 215, 0, 0.1) 50%);
+    pointer-events: none;
+    border-top-right-radius: 8px;
+}
+
+/* Make premium features stand out */
+.pe-premium-field:not(.pe-premium-locked) {
+    border-left: 3px solid #667eea;
+    padding-left: 12px;
+}
+
+/* Quick Discount Field */
+.pe-quick-discount-fields {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.pe-quick-discount-fields select {
+    min-width: 140px;
+}
+
+.pe-quick-discount-fields input[type="number"] {
+    width: 80px;
+    text-align: center;
+}
+
+.pe-quick-discount-fields input[type="text"] {
+    width: 130px;
+}
+
+.pe-discount-separator {
+    color: #666;
+    font-weight: 500;
+    padding: 0 4px;
+}
+
+.pe-premium-hint {
+    margin: 10px 0 0 0;
+    font-size: 13px;
+    color: #666;
+    font-style: italic;
+}
+
+.pe-quick-discount.pe-premium-locked .pe-quick-discount-fields {
+    opacity: 0.6;
+}

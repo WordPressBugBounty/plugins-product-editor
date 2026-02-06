@@ -3,7 +3,7 @@
 /**
  * The file that defines the core plugin class
  *
- * @link       https://github.com/dev-hedgehog/product-editor
+ * @link       https://github.com/speitzako-app/product-editor
  * @since      1.0.0
  *
  * @package    Product-Editor
@@ -22,7 +22,7 @@
  * @since      1.0.0
  * @package    Product-Editor
  * @subpackage Product_Editor/includes
- * @author     dev-hedgehog <dev.hedgehog.core@gmail.com>
+ * @author     speitzako-app <support@speitzako-app.com>
  */
 class Product_Editor {
 
@@ -74,6 +74,7 @@ class Product_Editor {
 		$this->set_locale();
 		$this->define_admin_hooks();
 		$this->define_common_hooks();
+		$this->init_scheduler();
 
 	}
 
@@ -256,6 +257,16 @@ class Product_Editor {
 	 */
 	public function get_version() {
 		return $this->version;
+	}
+
+	/**
+	 * Initialize the scheduler for premium features
+	 *
+	 * @since     2.0.0
+	 * @access    private
+	 */
+	private function init_scheduler() {
+		Product_Editor_Scheduler::init();
 	}
 
 }

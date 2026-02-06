@@ -6,7 +6,7 @@
  * Loads and defines the internationalization files for this plugin
  * so that it is ready for translation.
  *
- * @link       https://github.com/dev-hedgehog/product-editor
+ * @link       https://github.com/speitzako-app/product-editor
  * @since      1.0.0
  *
  * @package    Product-Editor

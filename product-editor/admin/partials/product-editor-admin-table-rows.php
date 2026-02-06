@@ -2,7 +2,7 @@
 /**
  * This file is a chunk that render rows of products table
  *
- * @link       https://github.com/dev-hedgehog/product-editor
+ * @link       https://github.com/speitzako-app/product-editor
  * @since      1.0.0
  *
  * @package    Product-Editor
@@ -33,6 +33,28 @@ foreach ( $products as $product ) {
 	$date_on_sale_to   = $product->get_date_on_sale_to( 'edit' );
 	$date_on_sale_to   = $date_on_sale_to ? $date_on_sale_to->date( 'Y-m-d' ) : '';
     $tag_list          = General_Helper::get_the_tags( $product );
+
+	// Get stock data
+	$stock_quantity = '';
+	$stock_status = '';
+	if ( ! $is_variable ) {
+		$stock_quantity = $product->get_stock_quantity( 'edit' );
+		$stock_status = $product->get_stock_status( 'edit' );
+	}
+
+	// Get categories
+	$category_ids = $product->get_category_ids();
+	$categories = array();
+	foreach ( $category_ids as $cat_id ) {
+		$term = get_term( $cat_id, 'product_cat' );
+		if ( $term && ! is_wp_error( $term ) ) {
+			$categories[] = $term->name;
+		}
+	}
+	$category_list = implode( ', ', $categories );
+
+	// Get weight
+	$weight = $is_variable ? '' : $product->get_weight( 'edit' );
 	?>
 	<tr class="<?php echo $tr_class; ?>" data-id="<?php echo esc_attr( $product->get_id() ); ?>">
 		<td><input class="cb-pr" name="ids[]" value="<?php echo esc_attr( $product->get_id() ); ?>" type="checkbox"></td>
@@ -55,6 +77,10 @@ foreach ( $products as $product ) {
 		<td class="td-date-on-sale-from <?php echo $is_variable ? '' : 'editable'; ?>"><?php echo esc_html( $date_on_sale_from ); ?></td>
 		<td class="td-date-on-sale-to <?php echo $is_variable ? '' : 'editable'; ?>"><?php echo esc_html( $date_on_sale_to ); ?></td>
 		<td class="td-tags"><?php echo esc_html( implode( ', ', $tag_list ) ); ?></td>
+		<td class="td-stock-quantity <?php echo $is_variable ? '' : 'editable'; ?>"><?php echo esc_html( $stock_quantity !== null ? $stock_quantity : '' ); ?></td>
+		<td class="td-stock-status <?php echo $is_variable ? '' : 'editable'; ?>"><?php echo esc_html( $stock_status ); ?></td>
+		<td class="td-categories"><?php echo esc_html( $category_list ); ?></td>
+		<td class="td-weight <?php echo $is_variable ? '' : 'editable'; ?>"><?php echo esc_html( $weight ); ?></td>
 	</tr>
 	<?php
 	if ( $is_variable && $show_variations ) {

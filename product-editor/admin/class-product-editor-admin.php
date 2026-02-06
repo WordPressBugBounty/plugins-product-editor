@@ -2,7 +2,7 @@
 /**
  * The admin-specific functionality of the plugin.
  *
- * @link       https://github.com/dev-hedgehog/product-editor
+ * @link       https://github.com/speitzako-app/product-editor
  * @since      1.0.0
  *
  * @package    Product-Editor
@@ -114,7 +114,27 @@ class Product_Editor_Admin {
             'caption' => 'Tags',
             'class' => 'td-tags',
             'visible' => true,
-        )
+        ),
+        'stock_quantity' => array(
+            'caption' => 'Stock',
+            'class' => 'td-stock-quantity',
+            'visible' => true,
+        ),
+        'stock_status' => array(
+            'caption' => 'Stock Status',
+            'class' => 'td-stock-status',
+            'visible' => true,
+        ),
+        'categories' => array(
+            'caption' => 'Categories',
+            'class' => 'td-categories',
+            'visible' => true,
+        ),
+        'weight' => array(
+            'caption' => 'Weight',
+            'class' => 'td-weight',
+            'visible' => false,
+        ),
     );
 
 	/**
@@ -127,7 +147,14 @@ class Product_Editor_Admin {
 		'change_sale_price'        => 'change_sale_price',
 		'change_date_on_sale_from' => 'change_date_on_sale_from',
 		'change_date_on_sale_to'   => 'change_date_on_sale_to',
+		'change_quick_discount'    => 'change_quick_discount',
 		'change_tags'              => 'change_tags',
+		'change_stock_quantity'    => 'change_stock_quantity',
+		'change_stock_status'      => 'change_stock_status',
+		'change_manage_stock'      => 'change_manage_stock',
+		'change_categories'        => 'change_categories',
+		'change_sku'               => 'change_sku',
+		'change_weight'            => 'change_weight',
 	);
 
 	/**
@@ -156,6 +183,7 @@ class Product_Editor_Admin {
         wp_register_style( 'tipTip', plugin_dir_url( __FILE__ ) . 'libs/tipTip/tipTip.css' );
         wp_register_style( 'selectPage', plugin_dir_url( __FILE__ ) . 'libs/selectPage/selectpage.css' );
 		wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/product-editor-admin.css', array( 'jquery-ui', 'tipTip', 'selectPage' ), $this->version, 'all' );
+		wp_enqueue_style( $this->plugin_name . '-premium', plugin_dir_url( __FILE__ ) . 'css/product-editor-premium.css', array(), $this->version, 'all' );
 	}
 
 	/**
@@ -260,6 +288,8 @@ class Product_Editor_Admin {
 		if ( ! current_user_can( 'manage_woocommerce' ) ) {
 			return;
 		}
+
+		// Main page
 		$hookname = add_submenu_page(
 			'edit.php?post_type=product',
 			__( 'Product Editor', 'product-editor' ),
@@ -271,6 +301,25 @@ class Product_Editor_Admin {
 
 		add_action( 'load-' . $hookname, array( $this, 'add_screen_help' ) );
 		add_action( "admin_print_scripts-$hookname", array( $this, 'enqueue_assets' ) );
+
+		// Scheduled Tasks page (Premium feature)
+		if ( Product_Editor_License::can_use_scheduler() ) {
+			$scheduler_hookname = add_submenu_page(
+				'edit.php?post_type=product',
+				__( 'Scheduled Tasks', 'product-editor' ),
+				__( 'Scheduled Tasks', 'product-editor' ),
+				'manage_woocommerce',
+				'product-editor-scheduler',
+				array( $this, 'scheduler_page' )
+			);
+			add_action( "admin_print_scripts-$scheduler_hookname", array( $this, 'enqueue_assets' ) );
+		}
+
+		// Note: Pricing and Account pages are now automatically managed by Freemius
+		// Freemius will add:
+		// - Pricing page (if not premium)
+		// - Account page (to manage license)
+		// - Contact/Support pages (optional)
 
         if ( get_option( 'woocommerce_navigation_enabled', 'no' ) === 'yes' && function_exists( 'wc_admin_connect_page' ) ) {
             wc_admin_connect_page(
@@ -534,8 +583,33 @@ class Product_Editor_Admin {
 				case 'change_date_on_sale_to':
 					$product->set_date_on_sale_to( $record['value'] );
 					break;
+				case 'change_quick_discount':
+					if ( is_array( $record['value'] ) ) {
+						$product->set_sale_price( $record['value']['sale_price'] );
+						$product->set_date_on_sale_from( $record['value']['date_from'] );
+						$product->set_date_on_sale_to( $record['value']['date_to'] );
+					}
+					break;
                 case 'change_tags':
                     $product->set_tag_ids( $record['value'] );
+                    break;
+                case 'change_stock_quantity':
+                    $product->set_stock_quantity( $record['value'] );
+                    break;
+                case 'change_stock_status':
+                    $product->set_stock_status( $record['value'] );
+                    break;
+                case 'change_manage_stock':
+                    $product->set_manage_stock( $record['value'] );
+                    break;
+                case 'change_categories':
+                    $product->set_category_ids( $record['value'] );
+                    break;
+                case 'change_sku':
+                    $product->set_sku( $record['value'] );
+                    break;
+                case 'change_weight':
+                    $product->set_weight( $record['value'] );
                     break;
 			}
 			$product->save();
@@ -573,11 +647,33 @@ class Product_Editor_Admin {
 	public function action_bulk_changes() {
         $this->set_die_handler();
 		self::security_check( true, true );
-		self::clearOldReverseSteps(50);
+
+		// Use dynamic undo limit based on license
+		$undo_limit = Product_Editor_License::get_undo_limit();
+		self::clearOldReverseSteps( $undo_limit );
+
 		// Check input data.
 		$is_empty = true;
 		$ids      = (string) General_Helper::post_var( 'ids' );
         $ids      = explode('|', $ids);
+
+		// Check product limit for free version
+		$product_limit = Product_Editor_License::get_product_limit();
+		if ( count( $ids ) > $product_limit ) {
+			$upgrade_url = Product_Editor_License::get_upgrade_url();
+			self::send_response(
+				array(
+					'message' => sprintf(
+						__( '⚡ You\'ve selected more than %d products! Unlock unlimited bulk editing with Premium and save hours of manual work. <a href="%s" target="_blank" style="font-weight:bold;">Upgrade Now →</a>', 'product-editor' ),
+						$product_limit,
+						$upgrade_url
+					),
+					'content' => array(),
+				),
+				403
+			);
+		}
+
 		foreach ( self::$change_actions as $action_name => $func_name ) {
 			if ( General_Helper::post_var( $action_name ) ) {
 				$is_empty = false;
@@ -593,49 +689,67 @@ class Product_Editor_Admin {
 		}
 
 		global $wpdb;
+
+		// Increase limits for large operations
+		@set_time_limit( 0 );
+		wp_raise_memory_limit( 'admin' );
+
 		// The request must be applied in full or not at all.
         $this->reverse_steps = [];
 		$wpdb->query( 'START TRANSACTION' );
 		$this->write_progress_file( 0 );
 
-		// 80% for changes, 20% for reloading
-        $percentage_for_one_item = 80 / count( $ids );
-		$items_for_one_percentage = ceil( count( $ids ) / 80 );
-        $items_for_one_percentage = $items_for_one_percentage < 3 ? 3 : $items_for_one_percentage;
-        // Walk through each product and apply the requested operations.
-		foreach ( $ids as $i => $id ) {
-			$id      = sanitize_key( $id );
-			$product = wc_get_product( $id );
-			if ( ! $product ) {
-				self::send_response(
-					/* translators: %s: id of a product */
-					array( 'message' => sprintf( __( 'Product with id:%s not found. Operations canceled.', 'product-editor' ), $id ) ),
-					500
+		try {
+			// 80% for changes, 20% for reloading
+			$percentage_for_one_item = 80 / count( $ids );
+			$items_for_one_percentage = ceil( count( $ids ) / 80 );
+			$items_for_one_percentage = $items_for_one_percentage < 3 ? 3 : $items_for_one_percentage;
+			// Walk through each product and apply the requested operations.
+			foreach ( $ids as $i => $id ) {
+				$id      = sanitize_key( $id );
+				$product = wc_get_product( $id );
+				if ( ! $product ) {
+					$wpdb->query( 'ROLLBACK' );
+					self::send_response(
+						/* translators: %s: id of a product */
+						array( 'message' => sprintf( __( 'Product with id:%s not found. Operations canceled.', 'product-editor' ), $id ) ),
+						500
+					);
+				}
+				$this->process_change_product( $product );
+				if ( $i % $items_for_one_percentage === 0 ) {
+					$progress = floor( $percentage_for_one_item * ( $i + 1 ) );
+					$this->write_progress_file($progress);
+				}
+			}
+			// If changes were made, save the previous values to the database.
+			if ( ! empty ( $this->reverse_steps ) ) {
+				$table_name = $wpdb->prefix . PRODUCT_EDITOR_REVERSE_TABLE;
+				$wpdb->insert(
+					$table_name,
+					array(
+						'time' => current_time( 'mysql' ),
+						'name' => current_time( 'mysql' ),
+						'data' => wp_json_encode( $this->reverse_steps ),
+					)
 				);
 			}
-			$this->process_change_product( $product );
-            if ( $i % $items_for_one_percentage === 0 ) {
-                $progress = floor( $percentage_for_one_item * ( $i + 1 ) );
-                $this->write_progress_file($progress);
-            }
-		}
-		// If changes were made, save the previous values to the database.
-		if ( ! empty ( $this->reverse_steps ) ) {
-			$table_name = $wpdb->prefix . PRODUCT_EDITOR_REVERSE_TABLE;
-			$wpdb->insert(
-				$table_name,
+			$wpdb->query( 'COMMIT' );
+
+		} catch ( Exception $e ) {
+			$wpdb->query( 'ROLLBACK' );
+			self::send_response(
 				array(
-					'time' => current_time( 'mysql' ),
-					'name' => current_time( 'mysql' ),
-					'data' => wp_json_encode( $this->reverse_steps ),
-				)
+					'message' => sprintf( __( 'Error during bulk operation: %s. All changes have been rolled back.', 'product-editor' ), $e->getMessage() ),
+				),
+				500
 			);
 		}
-		$wpdb->query( 'COMMIT' );
-        WC_Cache_Helper::get_transient_version( 'product', true );
-        if ( ! empty ( $this->reverse_steps ) ) {
-            $reverse_step = $wpdb->get_row('SELECT * FROM ' . $wpdb->prefix . PRODUCT_EDITOR_REVERSE_TABLE . ' ORDER BY id DESC LIMIT 1', ARRAY_A);
-        }
+
+		WC_Cache_Helper::get_transient_version( 'product', true );
+		if ( ! empty ( $this->reverse_steps ) ) {
+			$reverse_step = $wpdb->get_row('SELECT * FROM ' . $wpdb->prefix . PRODUCT_EDITOR_REVERSE_TABLE . ' ORDER BY id DESC LIMIT 1', ARRAY_A);
+		}
 		// Response new products data.
 		self::send_response(
 			array(
@@ -713,6 +827,25 @@ class Product_Editor_Admin {
 		$date_on_sale_from = $date_on_sale_from ? $date_on_sale_from->date( 'Y-m-d' ) : '';
 		$date_on_sale_to   = $product->get_date_on_sale_to( 'edit' );
 		$date_on_sale_to   = $date_on_sale_to ? $date_on_sale_to->date( 'Y-m-d' ) : '';
+
+		// Get stock data
+		$stock_quantity = '';
+		$stock_status = '';
+		if ( ! is_a( $product, 'WC_Product_Variable' ) ) {
+			$stock_quantity = $product->get_stock_quantity( 'edit' );
+			$stock_status = $product->get_stock_status( 'edit' );
+		}
+
+		// Get categories
+		$category_ids = $product->get_category_ids();
+		$categories = array();
+		foreach ( $category_ids as $cat_id ) {
+			$term = get_term( $cat_id, 'product_cat' );
+			if ( $term && ! is_wp_error( $term ) ) {
+				$categories[] = $term->name;
+			}
+		}
+
 		return array(
 			'id'                => $product->get_id(),
 			'price'             => $product->get_price_html(),
@@ -720,7 +853,11 @@ class Product_Editor_Admin {
 			'sale_price'        => $product->get_sale_price( 'edit' ),
 			'date_on_sale_from' => $date_on_sale_from,
 			'date_on_sale_to'   => $date_on_sale_to,
-            'tags'              => implode(', ', General_Helper::get_the_tags( $product ) )
+            'tags'              => implode(', ', General_Helper::get_the_tags( $product ) ),
+            'stock_quantity'    => $stock_quantity !== null ? $stock_quantity : '',
+            'stock_status'      => $stock_status,
+            'categories'        => implode(', ', $categories),
+            'weight'            => $product->get_weight( 'edit' ),
 		);
 	}
 
@@ -923,6 +1060,67 @@ class Product_Editor_Admin {
 		$product->set_date_on_sale_to( $arg_date );
 	}
 
+	/**
+	 * Handler function for Quick Discount - applies percentage discount with date range
+	 * Premium feature only
+	 *
+	 * @param WC_Product $product Object of WC_Product for change.
+	 *
+	 * @since    2.1.0
+	 */
+	private function change_quick_discount( $product ) {
+		// Check if premium feature
+		if ( ! Product_Editor_License::can_use_advanced_features() ) {
+			return;
+		}
+
+		$action = General_Helper::post_var( 'change_quick_discount' );
+		if ( empty( $action ) ) {
+			return;
+		}
+
+		$discount_percent = absint( General_Helper::post_var( '_quick_discount_percent' ) );
+		$date_from = wc_clean( General_Helper::post_var( '_quick_discount_from' ) );
+		$date_to = wc_clean( General_Helper::post_var( '_quick_discount_to' ) );
+
+		if ( $discount_percent < 1 || $discount_percent > 99 ) {
+			return;
+		}
+
+		// Get regular price
+		$regular_price = $product->get_regular_price();
+		if ( empty( $regular_price ) || ! is_numeric( $regular_price ) ) {
+			return;
+		}
+
+		// Calculate sale price
+		$sale_price = round( (float) $regular_price * ( 1 - $discount_percent / 100 ), wc_get_price_decimals() );
+
+		// Save old values for undo
+		$old_sale_price = $product->get_sale_price();
+		$old_date_from = $product->get_date_on_sale_from( 'edit' );
+		$old_date_to = $product->get_date_on_sale_to( 'edit' );
+
+		$this->reverse_steps[] = array(
+			'id'     => $product->get_id(),
+			'action' => 'change_quick_discount',
+			'value'  => array(
+				'sale_price' => $old_sale_price,
+				'date_from'  => $old_date_from ? $old_date_from->getTimestamp() : '',
+				'date_to'    => $old_date_to ? $old_date_to->getTimestamp() : '',
+			),
+		);
+
+		// Apply changes
+		$product->set_sale_price( $sale_price );
+		if ( ! empty( $date_from ) ) {
+			$product->set_date_on_sale_from( $date_from );
+		}
+		if ( ! empty( $date_to ) ) {
+			$product->set_date_on_sale_to( $date_to );
+		}
+	}
+
     /**
      * Handler function for the action to change tags. Data for the operation is taken from POST request
      * The handler is registered with self::$changeActions
@@ -964,6 +1162,276 @@ class Product_Editor_Admin {
         }
 
         $product->set_tag_ids($new_tag_ids);
+    }
+
+    /**
+     * Handler function for the action to change stock quantity. Data for the operation is taken from POST request
+     *
+     * @param WC_Product $product Object of WC_Product for change.
+     * @since    2.0.0
+     */
+    private function change_stock_quantity( $product ) {
+        // PREMIUM FEATURE CHECK
+        if ( ! Product_Editor_License::can_use_advanced_features() ) {
+            return;
+        }
+
+        $arg_stock_quantity = wc_clean( General_Helper::post_var( '_stock_quantity' ) );
+        $action             = General_Helper::post_var( 'change_stock_quantity' );
+
+        if ( empty( $action ) || is_a( $product, 'WC_Product_Variable' ) ) {
+            return;
+        }
+
+        // Save the value before the changes
+        $old_stock = $product->get_stock_quantity( 'edit' );
+        $this->reverse_steps[] = array(
+            'id'     => $product->get_id(),
+            'action' => 'change_stock_quantity',
+            'value'  => $old_stock,
+        );
+
+        $new_stock = $old_stock;
+        $number = (int) $arg_stock_quantity;
+
+        switch ( (int) $action ) {
+            case 1:
+                // Set to
+                $new_stock = $number;
+                break;
+            case 2:
+                // Increase by
+                $new_stock = $old_stock + $number;
+                break;
+            case 3:
+                // Decrease by
+                $new_stock = $old_stock - $number;
+                break;
+        }
+
+        // Enable stock management if setting a quantity
+        if ( $new_stock !== '' && $new_stock !== null ) {
+            $product->set_manage_stock( true );
+            $product->set_stock_quantity( $new_stock );
+        } else {
+            $product->set_stock_quantity( null );
+        }
+    }
+
+    /**
+     * Handler function for the action to change stock status. Data for the operation is taken from POST request
+     *
+     * @param WC_Product $product Object of WC_Product for change.
+     * @since    2.0.0
+     */
+    private function change_stock_status( $product ) {
+        // PREMIUM FEATURE CHECK
+        if ( ! Product_Editor_License::can_use_advanced_features() ) {
+            return;
+        }
+
+        $arg_stock_status = wc_clean( General_Helper::post_var( '_stock_status' ) );
+        $action           = General_Helper::post_var( 'change_stock_status' );
+
+        if ( empty( $action ) || is_a( $product, 'WC_Product_Variable' ) ) {
+            return;
+        }
+
+        // Save the value before the changes
+        $this->reverse_steps[] = array(
+            'id'     => $product->get_id(),
+            'action' => 'change_stock_status',
+            'value'  => $product->get_stock_status( 'edit' ),
+        );
+
+        // Valid statuses: instock, outofstock, onbackorder
+        if ( in_array( $arg_stock_status, array( 'instock', 'outofstock', 'onbackorder' ) ) ) {
+            $product->set_stock_status( $arg_stock_status );
+        }
+    }
+
+    /**
+     * Handler function for the action to change manage stock setting
+     *
+     * @param WC_Product $product Object of WC_Product for change.
+     * @since    2.0.0
+     */
+    private function change_manage_stock( $product ) {
+        // PREMIUM FEATURE CHECK
+        if ( ! Product_Editor_License::can_use_advanced_features() ) {
+            return;
+        }
+
+        $arg_manage_stock = General_Helper::post_var( '_manage_stock' );
+        $action           = General_Helper::post_var( 'change_manage_stock' );
+
+        if ( empty( $action ) || is_a( $product, 'WC_Product_Variable' ) ) {
+            return;
+        }
+
+        // Save the value before the changes
+        $this->reverse_steps[] = array(
+            'id'     => $product->get_id(),
+            'action' => 'change_manage_stock',
+            'value'  => $product->get_manage_stock( 'edit' ),
+        );
+
+        $product->set_manage_stock( (bool) $arg_manage_stock );
+    }
+
+    /**
+     * Handler function for the action to change categories
+     *
+     * @param WC_Product $product Object of WC_Product for change.
+     * @since    2.0.0
+     */
+    private function change_categories( $product ) {
+        // PREMIUM FEATURE CHECK
+        if ( ! Product_Editor_License::can_use_advanced_features() ) {
+            return;
+        }
+
+        $arg_categories = array_map( 'intval', explode( ',', General_Helper::post_var( '_categories', '' ) ) );
+        $action         = General_Helper::post_var( 'change_categories' );
+
+        if ( empty( $action ) || is_a( $product, 'WC_Product_Variation' ) ) {
+            return;
+        }
+
+        // Save the value before the changes
+        $old_category_ids = $product->get_category_ids();
+        $new_category_ids = $old_category_ids;
+
+        $this->reverse_steps[] = array(
+            'id'     => $product->get_id(),
+            'action' => 'change_categories',
+            'value'  => $old_category_ids,
+        );
+
+        switch ( (int) $action ) {
+            case 1:
+                // Set (replace)
+                $new_category_ids = $arg_categories;
+                break;
+            case 2:
+                // Add
+                $new_category_ids = array_unique( array_merge( $old_category_ids, $arg_categories ) );
+                break;
+            case 3:
+                // Remove
+                $new_category_ids = array_diff( $old_category_ids, $arg_categories );
+                break;
+        }
+
+        $product->set_category_ids( $new_category_ids );
+    }
+
+    /**
+     * Handler function for the action to change SKU
+     *
+     * @param WC_Product $product Object of WC_Product for change.
+     * @since    2.0.0
+     */
+    private function change_sku( $product ) {
+        // PREMIUM FEATURE CHECK
+        if ( ! Product_Editor_License::can_use_advanced_features() ) {
+            return;
+        }
+
+        $arg_sku = wc_clean( General_Helper::post_var( '_sku' ) );
+        $action  = General_Helper::post_var( 'change_sku' );
+
+        if ( empty( $action ) ) {
+            return;
+        }
+
+        // Save the value before the changes
+        $old_sku = $product->get_sku( 'edit' );
+        $this->reverse_steps[] = array(
+            'id'     => $product->get_id(),
+            'action' => 'change_sku',
+            'value'  => $old_sku,
+        );
+
+        $new_sku = '';
+
+        switch ( (int) $action ) {
+            case 1:
+                // Set to
+                $new_sku = $arg_sku;
+                break;
+            case 2:
+                // Add prefix
+                $new_sku = $arg_sku . $old_sku;
+                break;
+            case 3:
+                // Add suffix
+                $new_sku = $old_sku . $arg_sku;
+                break;
+            case 4:
+                // Replace text
+                $find = General_Helper::post_var( '_sku_find', '' );
+                $new_sku = str_replace( $find, $arg_sku, $old_sku );
+                break;
+        }
+
+        // Check if SKU is unique
+        if ( ! empty( $new_sku ) ) {
+            $sku_found = wc_get_product_id_by_sku( $new_sku );
+            if ( $sku_found && $sku_found !== $product->get_id() ) {
+                // SKU already exists, skip this product
+                return;
+            }
+            $product->set_sku( $new_sku );
+        }
+    }
+
+    /**
+     * Handler function for the action to change weight
+     *
+     * @param WC_Product $product Object of WC_Product for change.
+     * @since    2.0.0
+     */
+    private function change_weight( $product ) {
+        // PREMIUM FEATURE CHECK
+        if ( ! Product_Editor_License::can_use_advanced_features() ) {
+            return;
+        }
+
+        $arg_weight = wc_clean( General_Helper::post_var( '_weight' ) );
+        $action     = General_Helper::post_var( 'change_weight' );
+
+        if ( empty( $action ) || is_a( $product, 'WC_Product_Variable' ) ) {
+            return;
+        }
+
+        // Save the value before the changes
+        $this->reverse_steps[] = array(
+            'id'     => $product->get_id(),
+            'action' => 'change_weight',
+            'value'  => $product->get_weight( 'edit' ),
+        );
+
+        $old_weight = (float) $product->get_weight( 'edit' );
+        $new_weight = $old_weight;
+        $number     = (float) wc_format_decimal( $arg_weight );
+
+        switch ( (int) $action ) {
+            case 1:
+                // Set to
+                $new_weight = $number;
+                break;
+            case 2:
+                // Increase by
+                $new_weight = $old_weight + $number;
+                break;
+            case 3:
+                // Decrease by
+                $new_weight = $old_weight - $number;
+                break;
+        }
+
+        $product->set_weight( $new_weight > 0 ? $new_weight : '' );
     }
 
 	/**
@@ -1198,5 +1666,61 @@ class Product_Editor_Admin {
                 return [$this, 'die_handler'];
             }
         );
+    }
+
+    /**
+     * License page handler - NO LONGER USED
+     * Freemius now handles account/license management automatically
+     *
+     * @deprecated 2.0.0 Use Freemius Account page instead
+     * @since 2.0.0
+     */
+    /* DISABLED - Freemius handles this now
+    public function license_page() {
+        self::security_check( true );
+
+        // Redirect to Freemius account page
+        if ( function_exists( 'pe_fs' ) ) {
+            wp_redirect( pe_fs()->get_account_url() );
+            exit;
+        }
+
+        // Fallback message
+        echo '<div class="wrap"><h1>License Management</h1>';
+        echo '<p>License management is now handled by Freemius. Please check the Account menu.</p>';
+        echo '</div>';
+    }
+    */
+
+    /**
+     * Scheduler page handler (Premium feature)
+     *
+     * @since 2.0.0
+     */
+    public function scheduler_page() {
+        self::security_check( true );
+
+        if ( ! Product_Editor_License::can_use_scheduler() ) {
+            wp_die( __( 'This feature requires a premium license.', 'product-editor' ) );
+        }
+
+        // Handle task cancellation
+        if ( isset( $_GET['action'] ) && $_GET['action'] === 'cancel' && isset( $_GET['task_id'] ) ) {
+            if ( wp_verify_nonce( $_GET['_wpnonce'], 'cancel_task_' . $_GET['task_id'] ) ) {
+                $task_id = intval( $_GET['task_id'] );
+                if ( Product_Editor_Scheduler::cancel_task( $task_id ) ) {
+                    echo '<div class="notice notice-success"><p>' . __( 'Task cancelled successfully.', 'product-editor' ) . '</p></div>';
+                } else {
+                    echo '<div class="notice notice-error"><p>' . __( 'Failed to cancel task.', 'product-editor' ) . '</p></div>';
+                }
+            }
+        }
+
+        // Get all scheduled tasks
+        $pending_tasks = Product_Editor_Scheduler::get_tasks( Product_Editor_Scheduler::STATUS_PENDING, 50 );
+        $completed_tasks = Product_Editor_Scheduler::get_tasks( Product_Editor_Scheduler::STATUS_COMPLETED, 20 );
+        $failed_tasks = Product_Editor_Scheduler::get_tasks( Product_Editor_Scheduler::STATUS_FAILED, 20 );
+
+        include 'partials/product-editor-scheduler-page.php';
     }
 }
