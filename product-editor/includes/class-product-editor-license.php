@@ -23,7 +23,7 @@ class Product_Editor_License {
 	/**
 	 * Free version limits
 	 */
-	const FREE_PRODUCT_LIMIT = 50;
+	const FREE_PRODUCT_LIMIT = 20;
 	const FREE_UNDO_LIMIT = 3;
 
 	/**

@@ -1,7 +1,7 @@
 === Product Editor Pro - WooCommerce Bulk Edit: Prices, Stock, Images, Titles, CSV Import & More ===
 Contributors: speitzako-app
 Tags: woocommerce, bulk edit, stock management, price editor, csv import
-Stable tag: 2.3.0
+Stable tag: 2.3.1
 Requires PHP: 7.4
 Requires at least: 5.6
 Tested up to: 6.8
@@ -28,7 +28,7 @@ Mass edit thousands of products instantly, manage stock levels, bulk update titl
 
 **✨ Free Version Features**
 
-* ✅ Bulk edit up to 50 products at once
+* ✅ Bulk edit up to 20 products at once (free tier)
 * ✅ Change regular & sale prices (set, increase/decrease by % or fixed amount, multiply)
 * ✅ Set sale start and end dates
 * ✅ Round prices automatically
@@ -39,7 +39,7 @@ Mass edit thousands of products instantly, manage stock levels, bulk update titl
 
 **🌟 Premium Version Features**
 
-* ⭐ **UNLIMITED Bulk Editing** (No 50 product limit)
+* ⭐ **UNLIMITED Bulk Editing** (No 20-product limit)
 * ⭐ **Bulk Edit Titles & Descriptions** (Set, prefix, suffix, find & replace)
 * ⭐ **Bulk Set Featured Image** (Apply or remove image across hundreds of products)
 * ⭐ **CSV Import & Export** (Import supplier prices, export filtered catalog)
@@ -70,7 +70,7 @@ Yes, Product Editor Pro is fully compatible with WooCommerce 9.0+ and HPOS.
 Yes! The Premium version allows you to schedule bulk price changes for any future date and time.
 
 = What is the difference between Free and Premium? =
-The Free version is limited to editing 50 products at a time. The Premium version allows unlimited editing, stock management, category management, and scheduling.
+The Free version is limited to editing 20 products at a time. The Premium version allows unlimited editing, stock management, category management, and scheduling.
 
 = Can I undo bulk changes? =
 Yes! The free version keeps the last 3 operations that can be undone. Premium version keeps 50 undo operations.
@@ -104,7 +104,7 @@ Yes! The Premium version lets you set titles, add prefixes/suffixes, or use find
 Yes. Export your current catalog to CSV, edit in Excel or Google Sheets, then import back. Only edited fields are updated.
 
 = What is the difference between Free and Premium? =
-Free: bulk price/stock/tags updates, up to 50 products, 3 undos. Premium: unlimited products, titles, descriptions, images, SKU, CSV import/export, conditional price rules, activity log, 50 undos.
+Free: bulk price/stock/tags updates, up to 20 products at a time, 3 undos. Premium: unlimited products, titles, descriptions, images, SKU, CSV import/export, conditional price rules, activity log, 50 undos.
 
 = Can I undo bulk changes? =
 Yes! Free keeps 3 operations, Premium keeps 50. Click Undo to revert any change instantly without page reload.
@@ -116,6 +116,14 @@ Yes! Fully supports simple, variable (with variations), and external products.
 Yes — 14-day free trial, no credit card required.
 
 == Changelog ==
+
+= 2.3.1 =
+* IMPROVED: Free version limit reduced to 20 products (was 50) to better differentiate free vs premium
+* IMPROVED: Upgrade modal now shows contextual message (limit reached vs locked feature)
+* IMPROVED: 14-day free trial and price (from €39.99/yr) now shown in upgrade modal
+* IMPROVED: Live product selection counter warns when approaching free limit
+* IMPROVED: Pricing page now includes social proof, testimonials and trust signals
+* IMPROVED: License page refactored — better benefits overview, mini-testimonials, correct €-pricing
 
 = 2.3.0 =
 * NEW: Bulk edit product titles (set, prefix, suffix, find & replace)

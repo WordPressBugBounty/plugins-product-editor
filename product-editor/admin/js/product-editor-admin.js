@@ -689,7 +689,7 @@
 				error.json().then(jsonError => {
 					// Check if this is a product limit error (403) - show upgrade modal
 					if (error.status === 403 && typeof window.peShowUpgradeModal === 'function') {
-						window.peShowUpgradeModal();
+						window.peShowUpgradeModal('limit');
 					} else {
 						alert(jsonError.message);
 					}

@@ -59,63 +59,102 @@ if ( ! defined( 'WPINC' ) ) {
 			</div>
 
 			<div class="pe-upgrade-benefits">
-				<h3><?php esc_html_e( '🚀 Save hours every week with Premium:', 'product-editor' ); ?></h3>
+
+				<!-- Promo Banner -->
+				<div class="pe-promo-banner">
+					<span class="pe-promo-gift">🎁</span>
+					<div class="pe-promo-content">
+						<strong><?php esc_html_e( 'Limited Time — 15% off with code', 'product-editor' ); ?> <code class="pe-promo-code">PROMO15</code></strong>
+					</div>
+					<div class="pe-promo-timer" id="pe-promo-timer">
+						<span class="pe-timer-label"><?php esc_html_e( 'Offer ends in:', 'product-editor' ); ?></span>
+						<span class="pe-timer-countdown" id="pe-countdown"></span>
+					</div>
+				</div>
+
+				<h3 style="margin:24px 0 16px"><?php esc_html_e( '🚀 Everything you get with Pro:', 'product-editor' ); ?></h3>
 				<div class="pe-benefits-grid">
 					<div class="pe-benefit">
-						<span class="dashicons dashicons-products"></span>
-						<h4><?php esc_html_e( 'Unlimited Products', 'product-editor' ); ?></h4>
-						<p><?php esc_html_e( 'Edit your entire catalog at once - no more batch limits!', 'product-editor' ); ?></p>
+						<span class="pe-benefit-icon">⚡</span>
+						<h4><?php esc_html_e( 'No product limit', 'product-editor' ); ?></h4>
+						<p><?php esc_html_e( 'Edit 10, 100 or 10,000 products at once. No more stopping at 20.', 'product-editor' ); ?></p>
 					</div>
 					<div class="pe-benefit">
-						<span class="dashicons dashicons-calendar-alt"></span>
-						<h4><?php esc_html_e( 'Schedule Changes', 'product-editor' ); ?></h4>
-						<p><?php esc_html_e( 'Set it and forget it - automate Black Friday, sales & promotions', 'product-editor' ); ?></p>
+						<span class="pe-benefit-icon">📝</span>
+						<h4><?php esc_html_e( 'Bulk titles & descriptions', 'product-editor' ); ?></h4>
+						<p><?php esc_html_e( 'Set, prefix, suffix or find & replace across hundreds of products instantly.', 'product-editor' ); ?></p>
 					</div>
 					<div class="pe-benefit">
-						<span class="dashicons dashicons-backup"></span>
-						<h4><?php esc_html_e( 'Peace of Mind', 'product-editor' ); ?></h4>
-						<p><?php esc_html_e( '50 undo operations - easily fix any mistake', 'product-editor' ); ?></p>
+						<span class="pe-benefit-icon">📸</span>
+						<h4><?php esc_html_e( 'Bulk featured image', 'product-editor' ); ?></h4>
+						<p><?php esc_html_e( 'Apply or remove a featured image across your entire selection in one click.', 'product-editor' ); ?></p>
 					</div>
 					<div class="pe-benefit">
-						<span class="dashicons dashicons-email-alt"></span>
-						<h4><?php esc_html_e( 'Stay Informed', 'product-editor' ); ?></h4>
-						<p><?php esc_html_e( 'Get email alerts when scheduled tasks complete', 'product-editor' ); ?></p>
+						<span class="pe-benefit-icon">📊</span>
+						<h4><?php esc_html_e( 'CSV import & full export', 'product-editor' ); ?></h4>
+						<p><?php esc_html_e( 'Import supplier price lists from Excel/CSV. Export your full catalog with all columns.', 'product-editor' ); ?></p>
+					</div>
+					<div class="pe-benefit">
+						<span class="pe-benefit-icon">🎯</span>
+						<h4><?php esc_html_e( 'Conditional price rules', 'product-editor' ); ?></h4>
+						<p><?php esc_html_e( 'IF stock < 10 THEN decrease price by 15%. Automated pricing logic, zero code.', 'product-editor' ); ?></p>
+					</div>
+					<div class="pe-benefit">
+						<span class="pe-benefit-icon">📅</span>
+						<h4><?php esc_html_e( 'Schedule price changes', 'product-editor' ); ?></h4>
+						<p><?php esc_html_e( 'Plan Black Friday prices in advance. They go live automatically at the right time.', 'product-editor' ); ?></p>
+					</div>
+					<div class="pe-benefit">
+						<span class="pe-benefit-icon">↩️</span>
+						<h4><?php esc_html_e( '50 undo operations', 'product-editor' ); ?></h4>
+						<p><?php esc_html_e( 'Made a mistake on 500 products? One click reverts everything. Free plan has 3.', 'product-editor' ); ?></p>
+					</div>
+					<div class="pe-benefit">
+						<span class="pe-benefit-icon">📋</span>
+						<h4><?php esc_html_e( 'Activity log', 'product-editor' ); ?></h4>
+						<p><?php esc_html_e( 'Full audit trail of every bulk change — who changed what, when, and how many products.', 'product-editor' ); ?></p>
+					</div>
+				</div>
+
+				<!-- Mini testimonials -->
+				<div class="pe-mini-testimonials">
+					<div class="pe-mini-t">
+						<span class="pe-mini-stars">★★★★★</span>
+						<em>"CSV import saves me 1h every Monday with supplier price updates. ROI in the first week."</em>
+						<span class="pe-mini-author">— Thomas L., dropshipper</span>
+					</div>
+					<div class="pe-mini-t">
+						<span class="pe-mini-stars">★★★★★</span>
+						<em>"The undo saved me once from a fat-fingered 90% discount on 200 products. Worth it alone."</em>
+						<span class="pe-mini-author">— Alex R., sports store</span>
 					</div>
 				</div>
 
 				<div class="pe-pricing">
-					<!-- Promo Banner -->
-					<div class="pe-promo-banner">
-						<span class="pe-promo-gift">🎁</span>
-						<div class="pe-promo-content">
-							<strong><?php esc_html_e( 'Limited Time Offer!', 'product-editor' ); ?></strong>
-							<span><?php esc_html_e( 'Get 15% off with code', 'product-editor' ); ?> <code class="pe-promo-code">PROMO15</code></span>
-						</div>
-						<div class="pe-promo-timer" id="pe-promo-timer">
-							<span class="pe-timer-label"><?php esc_html_e( 'Ends in:', 'product-editor' ); ?></span>
-							<span class="pe-timer-countdown" id="pe-countdown"></span>
-						</div>
-					</div>
-
 					<h3><?php esc_html_e( 'Choose Your Plan', 'product-editor' ); ?></h3>
 					<div class="pe-pricing-options">
 						<div class="pe-price-option">
 							<h4><?php esc_html_e( 'Annual', 'product-editor' ); ?></h4>
-							<div class="pe-price">$39<span>/<?php esc_html_e( 'year', 'product-editor' ); ?></span></div>
-							<p><?php esc_html_e( '1 site • Updates • Support', 'product-editor' ); ?></p>
+							<div class="pe-price">€39.99<span>/<?php esc_html_e( 'year', 'product-editor' ); ?></span></div>
+							<p><?php esc_html_e( '1 site · All updates · Priority support', 'product-editor' ); ?></p>
 						</div>
 						<div class="pe-price-option pe-recommended">
-							<div class="pe-badge"><?php esc_html_e( 'Most Popular', 'product-editor' ); ?></div>
+							<div class="pe-badge"><?php esc_html_e( 'Best value', 'product-editor' ); ?></div>
 							<h4><?php esc_html_e( 'Lifetime', 'product-editor' ); ?></h4>
-							<div class="pe-price">$119<span><?php esc_html_e( ' once', 'product-editor' ); ?></span></div>
-							<p><?php esc_html_e( '1 site • Forever yours • No renewal', 'product-editor' ); ?></p>
+							<div class="pe-price">€119<span><?php esc_html_e( ' once', 'product-editor' ); ?></span></div>
+							<p><?php esc_html_e( '1 site · Forever · No renewal ever', 'product-editor' ); ?></p>
 						</div>
 					</div>
 
 					<a href="<?php echo esc_url( Product_Editor_License::get_upgrade_url() ); ?>" class="button button-primary button-hero" target="_blank">
-						<?php esc_html_e( 'Get Premium Now →', 'product-editor' ); ?>
+						<?php esc_html_e( 'Upgrade Now & Save 15% →', 'product-editor' ); ?>
 					</a>
-					<p class="pe-guarantee"><?php esc_html_e( '30-day money-back guarantee • Secure payment', 'product-editor' ); ?></p>
+					<p style="margin:8px 0 0">
+						<a href="<?php echo esc_url( Product_Editor_License::get_trial_url() ); ?>" target="_blank" style="color:#2271b1;font-size:13px">
+							<?php esc_html_e( 'Or start your 14-day free trial — no credit card required', 'product-editor' ); ?>
+						</a>
+					</p>
+					<p class="pe-guarantee"><?php esc_html_e( '✓ 30-day money-back guarantee  ✓ Secure payment via Freemius', 'product-editor' ); ?></p>
 
 					<!-- Social Proof -->
 					<div class="pe-social-proof">
@@ -131,46 +170,8 @@ if ( ! defined( 'WPINC' ) ) {
 							<span class="dashicons dashicons-admin-users"></span>
 							<strong>1,000+</strong> <?php esc_html_e( 'active installations', 'product-editor' ); ?>
 						</div>
-						<div class="pe-proof-item">
-							<span class="dashicons dashicons-yes-alt" style="color: #46b450;"></span>
-							<?php esc_html_e( 'Trusted by store owners worldwide', 'product-editor' ); ?>
-						</div>
 					</div>
 				</div>
-			</div>
-
-			<div class="pe-activate-license">
-				<h3><?php esc_html_e( 'Already have a license key?', 'product-editor' ); ?></h3>
-				<form method="post" action="">
-					<?php wp_nonce_field( 'pe_license_action', 'pe_license_nonce' ); ?>
-
-					<table class="form-table">
-						<tr>
-							<th scope="row">
-								<label for="license_key"><?php esc_html_e( 'License Key', 'product-editor' ); ?></label>
-							</th>
-							<td>
-								<input type="text" id="license_key" name="license_key" class="regular-text" placeholder="PE-XXXX-XXXX-XXXX-XXXX" required />
-								<p class="description"><?php esc_html_e( 'Enter your license key in the format: PE-XXXX-XXXX-XXXX-XXXX', 'product-editor' ); ?></p>
-							</td>
-						</tr>
-						<tr>
-							<th scope="row">
-								<label for="license_email"><?php esc_html_e( 'License Email', 'product-editor' ); ?></label>
-							</th>
-							<td>
-								<input type="email" id="license_email" name="license_email" class="regular-text" required />
-								<p class="description"><?php esc_html_e( 'The email address used when purchasing the license', 'product-editor' ); ?></p>
-							</td>
-						</tr>
-					</table>
-
-					<p class="submit">
-						<button type="submit" name="pe_activate_license" class="button button-primary">
-							<?php esc_html_e( 'Activate License', 'product-editor' ); ?>
-						</button>
-					</p>
-				</form>
 			</div>
 		</div>
 	<?php endif; ?>
@@ -189,9 +190,9 @@ if ( ! defined( 'WPINC' ) ) {
 			<tbody>
 				<tr>
 					<td><?php esc_html_e( 'Products per operation', 'product-editor' ); ?></td>
-					<td>50</td>
+					<td>20</td>
 					<td><?php esc_html_e( 'Unlimited', 'product-editor' ); ?></td>
-					<td><strong><?php echo $is_premium ? esc_html__( 'Unlimited', 'product-editor' ) : '50'; ?></strong></td>
+					<td><strong><?php echo $is_premium ? esc_html__( 'Unlimited', 'product-editor' ) : '20'; ?></strong></td>
 				</tr>
 				<tr>
 					<td><?php esc_html_e( 'Undo history', 'product-editor' ); ?></td>
@@ -456,6 +457,43 @@ if ( ! defined( 'WPINC' ) ) {
 
 .pe-proof-item strong {
 	color: #333;
+}
+
+.pe-benefit-icon {
+	font-size: 28px;
+	margin-bottom: 10px;
+	display: block;
+}
+
+/* Mini testimonials */
+.pe-mini-testimonials {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 16px;
+	margin: 24px 0;
+}
+.pe-mini-t {
+	background: #fff;
+	border: 1px solid #ddd;
+	border-left: 4px solid #2271b1;
+	border-radius: 6px;
+	padding: 14px 16px;
+	font-size: 13px;
+	color: #444;
+	line-height: 1.5;
+}
+.pe-mini-stars {
+	color: #f0c14b;
+	font-size: 12px;
+	display: block;
+	margin-bottom: 6px;
+}
+.pe-mini-author {
+	display: block;
+	margin-top: 8px;
+	color: #888;
+	font-size: 12px;
+	font-style: normal;
 }
 </style>
 

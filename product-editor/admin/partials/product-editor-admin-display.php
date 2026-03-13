@@ -1009,8 +1009,9 @@ jQuery(document).ready(function($) {
 	<div class="pe-modal-content">
 		<button class="pe-modal-close">&times;</button>
 		<div class="pe-modal-icon">🚀</div>
-		<h2><?php esc_html_e( 'Unlock Unlimited Editing!', 'product-editor' ); ?></h2>
-		<p class="pe-modal-subtitle"><?php esc_html_e( 'You\'ve reached the 50 product limit for free users.', 'product-editor' ); ?></p>
+		<h2><?php esc_html_e( 'Unlock Premium Features!', 'product-editor' ); ?></h2>
+		<p class="pe-modal-subtitle" id="pe-modal-subtitle-limit" style="display:none;"><?php esc_html_e( 'You\'ve reached the 20-product limit. Upgrade to edit your entire catalog at once.', 'product-editor' ); ?></p>
+		<p class="pe-modal-subtitle" id="pe-modal-subtitle-feature" style="display:none;"><?php esc_html_e( 'This feature is available in the Pro version. Upgrade to unlock it instantly.', 'product-editor' ); ?></p>
 
 		<div class="pe-modal-promo">
 			<span class="pe-promo-gift">🎁</span>
@@ -1021,21 +1022,26 @@ jQuery(document).ready(function($) {
 		</div>
 
 		<ul class="pe-modal-features">
-			<li><span class="dashicons dashicons-yes-alt"></span> <?php esc_html_e( 'Unlimited bulk editing', 'product-editor' ); ?></li>
-			<li><span class="dashicons dashicons-yes-alt"></span> <?php esc_html_e( 'Schedule price changes', 'product-editor' ); ?></li>
-			<li><span class="dashicons dashicons-yes-alt"></span> <?php esc_html_e( '50 undo operations', 'product-editor' ); ?></li>
-			<li><span class="dashicons dashicons-yes-alt"></span> <?php esc_html_e( 'Bulk title &amp; description editing', 'product-editor' ); ?></li>
-			<li><span class="dashicons dashicons-yes-alt"></span> <?php esc_html_e( 'Bulk image management', 'product-editor' ); ?></li>
-			<li><span class="dashicons dashicons-yes-alt"></span> <?php esc_html_e( 'CSV import &amp; full export', 'product-editor' ); ?></li>
-			<li><span class="dashicons dashicons-yes-alt"></span> <?php esc_html_e( 'Conditional price rules', 'product-editor' ); ?></li>
-			<li><span class="dashicons dashicons-yes-alt"></span> <?php esc_html_e( 'Activity log', 'product-editor' ); ?></li>
-			<li><span class="dashicons dashicons-yes-alt"></span> <?php esc_html_e( 'Priority support', 'product-editor' ); ?></li>
+			<li><span class="dashicons dashicons-yes-alt"></span> <?php esc_html_e( 'Unlimited bulk editing (no 20-product cap)', 'product-editor' ); ?></li>
+			<li><span class="dashicons dashicons-yes-alt"></span> <?php esc_html_e( 'Bulk title, description & image editing', 'product-editor' ); ?></li>
+			<li><span class="dashicons dashicons-yes-alt"></span> <?php esc_html_e( 'CSV import & full export', 'product-editor' ); ?></li>
+			<li><span class="dashicons dashicons-yes-alt"></span> <?php esc_html_e( 'Conditional price rules & quick discount', 'product-editor' ); ?></li>
+			<li><span class="dashicons dashicons-yes-alt"></span> <?php esc_html_e( 'Bulk stock, SKU & weight editing', 'product-editor' ); ?></li>
+			<li><span class="dashicons dashicons-yes-alt"></span> <?php esc_html_e( 'Activity log + 50 undo operations', 'product-editor' ); ?></li>
+			<li><span class="dashicons dashicons-yes-alt"></span> <?php esc_html_e( 'Scheduled price changes', 'product-editor' ); ?></li>
+			<li><span class="dashicons dashicons-yes-alt"></span> <?php esc_html_e( 'Priority email support', 'product-editor' ); ?></li>
 		</ul>
 
 		<a href="<?php echo esc_url( Product_Editor_License::get_upgrade_url() ); ?>" class="pe-modal-cta" target="_blank">
-			<?php esc_html_e( 'Upgrade Now & Save 15%', 'product-editor' ); ?> →
+			<?php esc_html_e( 'Upgrade Now & Save 15%', 'product-editor' ); ?> <small style="opacity:.8;font-weight:400;font-size:13px"><?php esc_html_e( 'from €39.99/yr', 'product-editor' ); ?></small> →
 		</a>
-		<p class="pe-modal-guarantee"><?php esc_html_e( '30-day money-back guarantee', 'product-editor' ); ?></p>
+		<?php $trial_url = Product_Editor_License::get_trial_url(); ?>
+		<p style="margin:12px 0 0;">
+			<a href="<?php echo esc_url( $trial_url ); ?>" target="_blank" style="color:#667eea;font-size:14px;text-decoration:underline;">
+				<?php esc_html_e( 'Start 14-day free trial — no credit card required', 'product-editor' ); ?>
+			</a>
+		</p>
+		<p class="pe-modal-guarantee"><?php esc_html_e( '✓ 30-day money-back guarantee  ✓ Cancel anytime', 'product-editor' ); ?></p>
 	</div>
 </div>
 
@@ -1292,7 +1298,11 @@ jQuery(document).ready(function($) {
 	'use strict';
 
 	// Upgrade Modal Functions
-	window.peShowUpgradeModal = function() {
+	// context: 'limit' (20-product cap hit) or 'feature' (locked field clicked)
+	window.peShowUpgradeModal = function(context) {
+		context = context || 'limit';
+		$('#pe-modal-subtitle-limit').toggle(context === 'limit');
+		$('#pe-modal-subtitle-feature').toggle(context === 'feature');
 		$('#pe-upgrade-modal').fadeIn(200);
 		$('body').css('overflow', 'hidden');
 	};
@@ -1478,14 +1488,26 @@ jQuery(document).ready(function($) {
     var $floatCount = $('#pe-float-count');
     var $selCount   = $('#pe-sel-count');
 
+    var FREE_LIMIT = <?php echo (int) Product_Editor_License::FREE_PRODUCT_LIMIT; ?>;
+    var IS_FREE    = <?php echo $is_free_user ? 'true' : 'false'; ?>;
+
     function updateFloatBar() {
         var n = $('input.cb-pr:checked, input.cb-vr:checked').length;
         var label = n === 1
             ? '1 <?php echo esc_js( __( 'product selected', 'product-editor' ) ); ?>'
             : n + ' <?php echo esc_js( __( 'products selected', 'product-editor' ) ); ?>';
 
+        // Free-user limit warning
+        if (IS_FREE) {
+            if (n >= FREE_LIMIT) {
+                label += ' <span style="background:#e74c3c;color:#fff;padding:2px 8px;border-radius:10px;font-size:12px;margin-left:6px">⚠ <?php echo esc_js( __( 'Limit reached — Pro has no limit', 'product-editor' ) ); ?></span>';
+            } else if (n >= FREE_LIMIT - 10) {
+                label += ' <span style="background:#f39c12;color:#fff;padding:2px 8px;border-radius:10px;font-size:12px;margin-left:6px">' + n + '/' + FREE_LIMIT + ' <?php echo esc_js( __( 'free limit', 'product-editor' ) ); ?></span>';
+            }
+        }
+
         if (n > 0) {
-            $floatCount.text(label);
+            $floatCount.html(label);
             $floatBar.addClass('visible');
             $selCount.text(n).addClass('visible');
         } else {
@@ -1555,7 +1577,7 @@ jQuery(document).ready(function($) {
     /* ── 5. PREMIUM LOCKED FIELDS → open modal ──────────────── */
     $(document).on('click', '.pe-premium-locked', function(e) {
         if ($(e.target).is('a, button, select, input, textarea')) return;
-        peShowUpgradeModal();
+        peShowUpgradeModal('feature');
     });
 
     /* ── 6. QUICK FILTERS — pass through to admin.php ─────────

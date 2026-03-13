@@ -9,7 +9,7 @@
  * Plugin Name:       Product Editor Pro - Bulk Edit & Schedule WooCommerce Prices
  * Plugin URI:        https://github.com/speitzako-app/product-editor
  * Description:       Bulk edit WooCommerce prices, stock, categories, SKU, titles, descriptions &amp; images. Schedule changes. CSV import/export. Conditional price rules. Activity log. Premium features unlock unlimited power!
- * Version:           2.3.0
+ * Version:           2.3.1
  * Author:            speitzako-app
  * Author URI:        https://github.com/speitzako-app
  * License:           GPL-2.0+
@@ -26,7 +26,7 @@ if (! defined('WPINC')) {
     die;
 }
 
-define('PRODUCT_EDITOR_VERSION', '2.3.0');
+define('PRODUCT_EDITOR_VERSION', '2.3.1');
 // table for storing old values of changed attributes.
 define('PRODUCT_EDITOR_REVERSE_TABLE', 'pe_reverse_steps');
 
@@ -113,6 +113,167 @@ function pe_fs_uninstall_cleanup() {
     $wpdb->query( "DROP TABLE IF EXISTS {$table_name}" );
 }
 
+/**
+ * Customize the Freemius pricing page — inject social proof above the widget
+ * and custom CSS to improve conversion.
+ *
+ * Filter: fs_templates/pricing.php_{unique_affix}
+ * @since 2.3.1
+ */
+add_filter( 'fs_templates/pricing.php_product_editor', 'pe_customize_freemius_pricing_page' );
+function pe_customize_freemius_pricing_page( $html ) {
+    $upgrade_url = function_exists( 'pe_fs' ) ? pe_fs()->get_upgrade_url() : '#';
+    $trial_url   = function_exists( 'pe_fs' ) ? pe_fs()->get_trial_url() : '#';
+
+    $before = '
+<style>
+/* ── Product Editor Pro — Pricing page enhancements ── */
+#fs_pricing { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+.pe-pricing-header {
+    background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%);
+    color: #fff;
+    padding: 40px 40px 32px;
+    text-align: center;
+    margin: -10px -10px 0;
+}
+.pe-pricing-header h2 {
+    font-size: 2rem;
+    font-weight: 800;
+    margin: 0 0 10px;
+    color: #fff;
+}
+.pe-pricing-header p {
+    color: #94a3b8;
+    font-size: 1.05rem;
+    margin: 0 0 24px;
+}
+.pe-ph-promo {
+    display: inline-block;
+    background: linear-gradient(90deg, #f59e0b, #ef4444);
+    color: #fff;
+    padding: 10px 24px;
+    border-radius: 30px;
+    font-weight: 700;
+    font-size: .95rem;
+    margin-bottom: 28px;
+}
+.pe-ph-promo code {
+    background: rgba(255,255,255,.25);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 1rem;
+    font-weight: 800;
+}
+.pe-ph-stats {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    flex-wrap: wrap;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255,255,255,.1);
+}
+.pe-ph-stat strong { display: block; font-size: 1.6rem; font-weight: 800; color: #60a5fa; }
+.pe-ph-stat span { font-size: .82rem; color: #94a3b8; }
+
+.pe-pricing-testimonials {
+    display: grid;
+    grid-template-columns: repeat(3,1fr);
+    gap: 16px;
+    padding: 28px 40px;
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+}
+.pe-pt {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-left: 4px solid #2563eb;
+    border-radius: 8px;
+    padding: 16px;
+    font-size: 13px;
+    color: #374151;
+    line-height: 1.5;
+}
+.pe-pt-stars { color: #f59e0b; font-size: 11px; margin-bottom: 6px; }
+.pe-pt-author { color: #9ca3af; font-size: 11px; margin-top: 8px; }
+
+.pe-pricing-footer {
+    padding: 24px 40px;
+    background: #f8fafc;
+    border-top: 1px solid #e2e8f0;
+    text-align: center;
+}
+.pe-pf-trust {
+    display: flex;
+    justify-content: center;
+    gap: 32px;
+    flex-wrap: wrap;
+    color: #64748b;
+    font-size: 13px;
+}
+.pe-pf-trust span { display: flex; align-items: center; gap: 6px; }
+.pe-trial-link {
+    display: block;
+    margin: 12px auto 0;
+    color: #2563eb;
+    font-size: 13px;
+    text-decoration: underline;
+    text-align: center;
+}
+@media(max-width:800px) {
+    .pe-pricing-testimonials { grid-template-columns: 1fr; }
+    .pe-ph-stats { gap: 20px; }
+}
+</style>
+
+<div class="pe-pricing-header">
+    <h2>⚡ Product Editor Pro</h2>
+    <p>Edit your entire WooCommerce catalog in seconds — not hours.</p>
+    <div class="pe-ph-promo">🎁 Limited offer — 15% off with code <code>PROMO15</code></div>
+    <div class="pe-ph-stats">
+        <div class="pe-ph-stat"><strong>1,000+</strong><span>active stores</span></div>
+        <div class="pe-ph-stat"><strong>5/5 ★</strong><span>on WordPress.org</span></div>
+        <div class="pe-ph-stat"><strong>14 days</strong><span>free trial</span></div>
+        <div class="pe-ph-stat"><strong>30 days</strong><span>money-back</span></div>
+    </div>
+</div>
+
+<div class="pe-pricing-testimonials">
+    <div class="pe-pt">
+        <div class="pe-pt-stars">★★★★★</div>
+        "CSV import saves me 1h every Monday with supplier prices. ROI in the first week."
+        <div class="pe-pt-author">— Thomas L., dropshipper · 500 products</div>
+    </div>
+    <div class="pe-pt">
+        <div class="pe-pt-stars">★★★★★</div>
+        "The undo button saved me once from a 90% discount on 200 products by mistake. Worth it alone."
+        <div class="pe-pt-author">— Alex R., sports equipment · 600 products</div>
+    </div>
+    <div class="pe-pt">
+        <div class="pe-pt-stars">★★★★★</div>
+        "Setup took 2 min. Bulk-renamed 400 products with a prefix. Something I\'d been dreading for weeks."
+        <div class="pe-pt-author">— Clara M., home decor · 400 products</div>
+    </div>
+</div>
+';
+
+    $after = '
+<div class="pe-pricing-footer">
+    <div class="pe-pf-trust">
+        <span>✓ 30-day money-back guarantee</span>
+        <span>✓ Cancel anytime</span>
+        <span>✓ Instant activation after payment</span>
+        <span>✓ Secure checkout via Freemius</span>
+    </div>
+    <a href="' . esc_url( $trial_url ) . '" class="pe-trial-link" target="_blank">
+        Or start your 14-day free trial — no credit card required
+    </a>
+</div>
+';
+
+    return $before . $html . $after;
+}
+
 function activate_product_editor()
 {
     require_once plugin_dir_path(__FILE__) . 'includes/class-product-editor-activator.php';
@@ -190,7 +351,7 @@ function pe_advertise_update_on_products_screen() {
     ?>
     <div class="notice notice-info is-dismissible" id="pe-update-notice">
         <p>
-            <strong>⚡ New in Product Editor:</strong> Version 2.3.0 is here!<br>
+            <strong>⚡ New in Product Editor:</strong> Version 2.3.1 is here!<br>
             Now with <strong>bulk title/description editing</strong>, <strong>featured image bulk set</strong>, <strong>CSV import/export</strong> and <strong>conditional price rules</strong>!
         </p>
         <?php if ( $is_free ) : ?>
@@ -265,7 +426,7 @@ function pe_enqueue_pointer_script_style( $hook_suffix ) {
 add_action( 'admin_enqueue_scripts', 'pe_enqueue_pointer_script_style' );
 
 function pe_print_pointer_script() {
-    $pointer_content = '<h3>🎁 Version 2.3.0 — New Features!</h3>';
+    $pointer_content = '<h3>🎁 Version 2.3.1 — New Features!</h3>';
     $pointer_content .= '<p>Bulk title/description editing, CSV import/export, featured image bulk set. <strong>Use code PROMO15</strong> for 15% off Pro!</p>';
     ?>
     <script type="text/javascript">
