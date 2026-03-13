@@ -425,3 +425,240 @@
 .ui-datepicker {
     z-index: 11!important;
 }
+
+/* =====================================================
+   UX/UI 2.4 — Tabs, Floating bar, Quick filters, etc.
+   ===================================================== */
+
+/* ── Tab navigation ── */
+.pe-tabs-nav {
+    display: flex;
+    gap: 4px;
+    margin: 14px 0 0;
+    border-bottom: 2px solid #dcdcde;
+    flex-wrap: wrap;
+}
+.pe-tab-btn {
+    background: #f6f7f7;
+    border: 2px solid #dcdcde;
+    border-bottom: none;
+    border-radius: 6px 6px 0 0;
+    padding: 8px 18px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #646970;
+    cursor: pointer;
+    position: relative;
+    top: 2px;
+    transition: background .12s, color .12s;
+}
+.pe-tab-btn:hover { background: #fff; color: #1d2327; }
+.pe-tab-btn.active {
+    background: #fff;
+    border-color: #dcdcde;
+    border-bottom-color: #fff;
+    color: #2271b1;
+    z-index: 1;
+}
+.pe-tab-btn .pe-tab-lock { font-size: 10px; margin-left: 4px; opacity: .65; }
+.pe-tab-panel-body { padding-top: 6px; }
+
+/* ── Floating action bar ── */
+.pe-float-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #1d2327;
+    color: #fff;
+    padding: 13px 28px;
+    display: none;
+    align-items: center;
+    gap: 14px;
+    z-index: 99999;
+    box-shadow: 0 -4px 24px rgba(0,0,0,.45);
+    animation: peSlideUp .2s ease;
+}
+@keyframes peSlideUp {
+    from { transform: translateY(100%); }
+    to   { transform: translateY(0); }
+}
+.pe-float-bar.visible { display: flex; }
+.pe-float-count {
+    font-weight: 700;
+    font-size: 14px;
+    background: rgba(255,255,255,.14);
+    padding: 6px 16px;
+    border-radius: 20px;
+    white-space: nowrap;
+}
+.pe-float-apply {
+    background: #2271b1 !important;
+    border-color: #2271b1 !important;
+    color: #fff !important;
+    font-weight: 700 !important;
+    padding: 9px 22px !important;
+    font-size: 14px !important;
+    border-radius: 5px !important;
+}
+.pe-float-apply:hover { background: #135e96 !important; border-color: #135e96 !important; }
+.pe-float-clear {
+    background: none;
+    border: 1px solid rgba(255,255,255,.35);
+    color: rgba(255,255,255,.8);
+    border-radius: 4px;
+    padding: 7px 14px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: border-color .15s, color .15s;
+}
+.pe-float-clear:hover { border-color: rgba(255,255,255,.75); color: #fff; }
+.pe-float-spacer { flex: 1; }
+.pe-float-tab-hint {
+    font-size: 12px;
+    color: rgba(255,255,255,.5);
+    white-space: nowrap;
+}
+.pe-float-upgrade {
+    background: linear-gradient(135deg, #ffd700, #ffb700);
+    color: #333 !important;
+    padding: 9px 20px;
+    border-radius: 20px;
+    text-decoration: none !important;
+    font-weight: 700;
+    font-size: 13px;
+    white-space: nowrap;
+    transition: transform .15s, box-shadow .15s;
+}
+.pe-float-upgrade:hover {
+    transform: scale(1.04);
+    box-shadow: 0 4px 14px rgba(255,183,0,.4);
+    color: #333 !important;
+}
+
+/* ── Quick filter chips ── */
+.pe-quick-filters {
+    display: flex;
+    gap: 8px;
+    margin: 12px 0 6px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+.pe-quick-filters-label {
+    font-size: 11px;
+    color: #8c8f94;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+}
+.pe-qf-chip {
+    background: #f0f0f1;
+    border: 1px solid #c3c4c7;
+    border-radius: 20px;
+    padding: 5px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #2c3338;
+    text-decoration: none !important;
+    cursor: pointer;
+    transition: background .12s, border-color .12s, color .12s;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+.pe-qf-chip:hover, .pe-qf-chip.active {
+    background: #2271b1;
+    border-color: #2271b1;
+    color: #fff !important;
+}
+
+/* ── Search collapsible ── */
+.pe-search-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    user-select: none;
+    margin-bottom: 0;
+}
+.pe-search-header .search__h2 { margin: 0; }
+.pe-search-toggle-btn {
+    background: #f0f0f1;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    padding: 4px 10px;
+    font-size: 11px;
+    cursor: pointer;
+    color: #646970;
+    transition: background .12s;
+}
+.pe-search-toggle-btn:hover { background: #dcdcde; }
+.pe-search-body { margin-top: 10px; }
+.pe-search-body.pe-collapsed { display: none; }
+.pe-active-filters-badge {
+    background: #2271b1;
+    color: #fff;
+    border-radius: 10px;
+    padding: 2px 9px;
+    font-size: 11px;
+    font-weight: 700;
+    display: none;
+}
+.pe-active-filters-badge.visible { display: inline-block; }
+
+/* ── Row highlight on select ── */
+.pe-product-table tr.pe-row-selected td {
+    background-color: #e8f0fe !important;
+}
+.pe-product-table tr.pe-row-selected {
+    box-shadow: inset 2px 0 0 #2271b1;
+}
+
+/* ── Copy promo button ── */
+.pe-copy-btn {
+    background: rgba(255,255,255,.18);
+    border: 1px solid rgba(255,255,255,.4);
+    color: #fff;
+    border-radius: 4px;
+    padding: 2px 9px;
+    font-size: 10px;
+    cursor: pointer;
+    margin-left: 5px;
+    vertical-align: middle;
+    transition: background .15s;
+    font-weight: 600;
+}
+.pe-copy-btn:hover { background: rgba(255,255,255,.3); }
+.pe-copy-btn.pe-copied { background: #00a32a; border-color: #00a32a; }
+
+/* ── Editable cell pencil hint ── */
+.product-editor .pe-product-table td.editable {
+    position: relative;
+}
+.product-editor .pe-product-table td.editable:hover::after {
+    content: '✎';
+    position: absolute;
+    top: 3px;
+    right: 5px;
+    font-size: 11px;
+    color: #2271b1;
+    opacity: .7;
+}
+
+/* ── Selection counter badge next to checkbox header ── */
+.pe-sel-count {
+    display: none;
+    background: #2271b1;
+    color: #fff;
+    border-radius: 10px;
+    padding: 1px 7px;
+    font-size: 10px;
+    font-weight: 700;
+    margin-top: 3px;
+}
+.pe-sel-count.visible { display: block; }
+
+/* ── Bulk fieldset cleaner layout ── */
+#bulk-changes fieldset { padding-bottom: 10px; }
+#bulk-changes fieldset h2 { margin-bottom: 0; }

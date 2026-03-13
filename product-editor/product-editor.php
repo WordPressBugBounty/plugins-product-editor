@@ -8,8 +8,8 @@
  * @wordpress-plugin
  * Plugin Name:       Product Editor Pro - Bulk Edit & Schedule WooCommerce Prices
  * Plugin URI:        https://github.com/speitzako-app/product-editor
- * Description:       Bulk edit WooCommerce prices, stock, categories, and SKU. Schedule changes for future dates. Mass update inventory, tags, and more. Premium features for stock & category management!
- * Version:           2.2.1
+ * Description:       Bulk edit WooCommerce prices, stock, categories, SKU, titles, descriptions &amp; images. Schedule changes. CSV import/export. Conditional price rules. Activity log. Premium features unlock unlimited power!
+ * Version:           2.3.0
  * Author:            speitzako-app
  * Author URI:        https://github.com/speitzako-app
  * License:           GPL-2.0+
@@ -26,7 +26,7 @@ if (! defined('WPINC')) {
     die;
 }
 
-define('PRODUCT_EDITOR_VERSION', '2.2.1');
+define('PRODUCT_EDITOR_VERSION', '2.3.0');
 // table for storing old values of changed attributes.
 define('PRODUCT_EDITOR_REVERSE_TABLE', 'pe_reverse_steps');
 
@@ -190,8 +190,8 @@ function pe_advertise_update_on_products_screen() {
     ?>
     <div class="notice notice-info is-dismissible" id="pe-update-notice">
         <p>
-            <strong>⚡ New in Product Editor:</strong> Version 2.2.1 is here!<br>
-            Discover <strong>bulk stock management</strong> and <strong>price scheduling</strong> directly in our editor.
+            <strong>⚡ New in Product Editor:</strong> Version 2.3.0 is here!<br>
+            Now with <strong>bulk title/description editing</strong>, <strong>featured image bulk set</strong>, <strong>CSV import/export</strong> and <strong>conditional price rules</strong>!
         </p>
         <?php if ( $is_free ) : ?>
         <p style="background: linear-gradient(90deg, #ff6b6b, #ee5a24); color: #fff; padding: 10px 15px; border-radius: 4px; display: inline-block; font-weight: bold;">
@@ -265,8 +265,8 @@ function pe_enqueue_pointer_script_style( $hook_suffix ) {
 add_action( 'admin_enqueue_scripts', 'pe_enqueue_pointer_script_style' );
 
 function pe_print_pointer_script() {
-    $pointer_content = '<h3>🎁 Version 2.2.1 + Promo !</h3>';
-    $pointer_content .= '<p>Nouvelles fonctionnalités disponibles. <strong>Code promo PROMO15</strong> pour 15% de réduction !</p>';
+    $pointer_content = '<h3>🎁 Version 2.3.0 — New Features!</h3>';
+    $pointer_content .= '<p>Bulk title/description editing, CSV import/export, featured image bulk set. <strong>Use code PROMO15</strong> for 15% off Pro!</p>';
     ?>
     <script type="text/javascript">
     jQuery(document).ready(function($) {

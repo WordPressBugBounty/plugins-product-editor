@@ -55,6 +55,14 @@ foreach ( $products as $product ) {
 
 	// Get weight
 	$weight = $is_variable ? '' : $product->get_weight( 'edit' );
+
+	// Thumbnail
+	$thumb_id  = $product->get_image_id();
+	$thumb_url = $thumb_id ? wp_get_attachment_image_url( $thumb_id, array( 40, 40 ) ) : '';
+
+	// Short description (truncated)
+	$short_desc = wp_strip_all_tags( $product->get_short_description( 'edit' ) );
+	$short_desc = mb_strlen( $short_desc ) > 80 ? mb_substr( $short_desc, 0, 80 ) . '…' : $short_desc;
 	?>
 	<tr class="<?php echo $tr_class; ?>" data-id="<?php echo esc_attr( $product->get_id() ); ?>">
 		<td><input class="cb-pr" name="ids[]" value="<?php echo esc_attr( $product->get_id() ); ?>" type="checkbox"></td>
@@ -81,6 +89,8 @@ foreach ( $products as $product ) {
 		<td class="td-stock-status <?php echo $is_variable ? '' : 'editable'; ?>"><?php echo esc_html( $stock_status ); ?></td>
 		<td class="td-categories"><?php echo esc_html( $category_list ); ?></td>
 		<td class="td-weight <?php echo $is_variable ? '' : 'editable'; ?>"><?php echo esc_html( $weight ); ?></td>
+	<td class="td-thumbnail"><?php if ( $thumb_url ) echo '<img src="' . esc_url( $thumb_url ) . '" width="40" height="40" style="object-fit:cover;border-radius:3px">'; ?></td>
+	<td class="td-short-description" title="<?php echo esc_attr( $short_desc ); ?>"><?php echo esc_html( $short_desc ); ?></td>
 	</tr>
 	<?php
 	if ( $is_variable && $show_variations ) {

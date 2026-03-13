@@ -150,6 +150,56 @@ class Product_Editor_License {
 	}
 
 	/**
+	 * Check if bulk image management is available (Premium)
+	 *
+	 * @return bool
+	 * @since 2.3.0
+	 */
+	public static function can_use_bulk_images() {
+		return self::is_premium();
+	}
+
+	/**
+	 * Check if CSV export is available (free: basic cols; premium: all cols)
+	 *
+	 * @return bool Always true — full columns require premium
+	 * @since 2.3.0
+	 */
+	public static function can_export_csv() {
+		return true;
+	}
+
+	/**
+	 * Check if CSV import is available (Premium)
+	 *
+	 * @return bool
+	 * @since 2.3.0
+	 */
+	public static function can_import_csv() {
+		return self::is_premium();
+	}
+
+	/**
+	 * Check if conditional price rules are available (Premium)
+	 *
+	 * @return bool
+	 * @since 2.3.0
+	 */
+	public static function can_use_price_rules() {
+		return self::is_premium();
+	}
+
+	/**
+	 * Check if the activity log is available (Premium)
+	 *
+	 * @return bool
+	 * @since 2.3.0
+	 */
+	public static function can_view_activity_log() {
+		return self::is_premium();
+	}
+
+	/**
 	 * Get upgrade URL
 	 *
 	 * @return string URL to upgrade page

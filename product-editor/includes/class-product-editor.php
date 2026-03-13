@@ -152,6 +152,10 @@ class Product_Editor {
         $this->loader->add_action( 'admin_post_pe_get_progress', $plugin_admin, 'action_get_progress' );
         $this->loader->add_action( 'wp_ajax_pe_get_terms', $plugin_admin, 'action_get_terms' );
         $this->loader->add_action( 'wp_ajax_pe_set_visible_column', $plugin_admin, 'action_set_visible_column' );
+        // New features v2.3.0
+        $this->loader->add_action( 'admin_post_pe_export_csv', $plugin_admin, 'action_export_csv' );
+        $this->loader->add_action( 'admin_post_pe_apply_price_rules', $plugin_admin, 'action_apply_price_rules' );
+        $this->loader->add_action( 'admin_post_pe_csv_import_apply', $plugin_admin, 'action_csv_import_apply' );
 
 
 	}

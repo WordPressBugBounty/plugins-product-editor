@@ -1,48 +1,56 @@
-=== Product Editor Pro - WooCommerce Bulk Edit: Prices, Stock, Inventory, Categories & SKU ===
+=== Product Editor Pro - WooCommerce Bulk Edit: Prices, Stock, Images, Titles, CSV Import & More ===
 Contributors: speitzako-app
-Tags: woocommerce, bulk edit, stock management, inventory management, price editor
-Stable tag: 2.2.1
+Tags: woocommerce, bulk edit, stock management, price editor, csv import
+Stable tag: 2.3.0
 Requires PHP: 7.4
 Requires at least: 5.6
 Tested up to: 6.8
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-The #1 WooCommerce Bulk Editor: Mass edit prices, stock, inventory, SKU & categories instantly. Schedule sales & save hours of manual work!
+The fastest WooCommerce Bulk Editor: Mass edit prices, stock, titles, images, SKU & categories. CSV import/export. Undo. Save hours every week!
 
 == Description ==
 
-**Product Editor Pro is the most efficient WooCommerce bulk editing and inventory management tool.**
+**Product Editor Pro is the most complete WooCommerce bulk editing tool — edit prices, stock, titles, images, and more across your entire catalog in seconds.**
 
-Mass edit thousands of products instantly, manage stock levels, organize categories, and schedule price changes for future sales. Whether you need to update stock for 1000 items or plan a Black Friday sale, Product Editor Pro handles it in seconds.
+Mass edit thousands of products instantly, manage stock levels, bulk update titles and descriptions, set featured images in bulk, and import supplier prices via CSV. Whether you need to update stock for 1000 items or run a Black Friday sale, Product Editor Pro handles it in under 60 seconds.
 
 **🚀 Why Choose Product Editor Pro?**
 
-* **Bulk Edit Everything:** Update prices, stock, categories, SKU, and weights.
-* **Schedule Sales (Premium):** Plan price changes for specific dates automatically.
-* **Inventory Management:** Set items to "In Stock", "Out of Stock" or update quantities in bulk.
-* **Undo Changes:** Made a mistake? Rollback your bulk changes with one click.
-* **High Performance:** Works with thousands of products and is HPOS compatible.
+* **Bulk Edit Everything:** Prices, stock, titles, descriptions, images, SKU, categories, tags, weights.
+* **Smart Filtering:** Quick filter chips (Out of Stock, On Sale, Variable) + advanced price/stock/date range filters.
+* **CSV Import & Export (Premium):** Import supplier price lists, export your catalog — all in one click.
+* **Conditional Price Rules (Premium):** Apply price changes based on conditions — no code needed.
+* **Undo Changes:** Made a mistake? Rollback any bulk change instantly (3 free, 50 premium).
+* **Activity Log (Premium):** Full audit trail of every change — who changed what, when.
+* **High Performance:** Works with thousands of products, HPOS compatible, real-time progress bar.
 
 **✨ Free Version Features**
 
 * ✅ Bulk edit up to 50 products at once
-* ✅ Change regular & sale prices (Increase/Decrease by % or fixed amount)
+* ✅ Change regular & sale prices (set, increase/decrease by % or fixed amount, multiply)
 * ✅ Set sale start and end dates
 * ✅ Round prices automatically
-* ✅ Change product tags in bulk
+* ✅ Change product tags and categories in bulk
 * ✅ 3 Undo operations history
-* ✅ Advanced filtering (Category, SKU, Stock Status, etc.)
+* ✅ Quick filter chips: Out of Stock, In Stock, On Sale, Variable, Simple
+* ✅ Advanced filtering: price range, stock range, creation date
 
 **🌟 Premium Version Features**
 
 * ⭐ **UNLIMITED Bulk Editing** (No 50 product limit)
-* ⭐ **Schedule Price Changes** (Automatic start/end for sales)
-* ⭐ **Bulk Edit Stock** (Quantities & Status)
-* ⭐ **Bulk Edit Categories** (Add, Remove, Replace)
+* ⭐ **Bulk Edit Titles & Descriptions** (Set, prefix, suffix, find & replace)
+* ⭐ **Bulk Set Featured Image** (Apply or remove image across hundreds of products)
+* ⭐ **CSV Import & Export** (Import supplier prices, export filtered catalog)
+* ⭐ **Conditional Price Rules** (If price > X, decrease by Y% — automated pricing logic)
+* ⭐ **Quick Discount** (Apply % or fixed discount to sale prices instantly)
 * ⭐ **Bulk Edit SKU** (Prefix, Suffix, Find & Replace)
+* ⭐ **Bulk Edit Stock** (Quantities & Status)
 * ⭐ **Bulk Edit Weight** (Shipping management)
+* ⭐ **Activity Log** (Full audit trail of all bulk changes)
 * ⭐ **50 Undo Operations**
+* ⭐ **Scheduled Tasks** (Plan price changes for future dates)
 * ⭐ **Priority Email Support**
 
 
@@ -75,12 +83,53 @@ Yes! You can search and filter products by any custom taxonomy, not just standar
 
 == Screenshots ==
 
-1.  Main bulk editor interface - Filter and select products easily.
-2.  Bulk Price Editing - Increase/decrease prices or set sales.
-3.  Stock Management - Quickly update inventory quantities.
-4.  Category Management - Organize products in bulk.
+1.  Main bulk editor — product table with quick filters, selection and floating action bar.
+2.  Prices tab — bulk update regular price, sale price, dates, quick discount.
+3.  Stock tab — bulk update stock status and quantity.
+4.  Content tab — bulk edit titles, descriptions, SKU in bulk.
+5.  Images tab — bulk set or remove featured image.
+6.  Advanced filters — filter by price range, stock range, creation date.
+7.  CSV Import — import product data from spreadsheet.
+8.  Activity Log — full audit trail of every bulk change.
+
+== Frequently Asked Questions ==
+
+= Is it compatible with the latest WooCommerce? =
+Yes, Product Editor Pro is fully compatible with WooCommerce 9.0+ and HPOS (High Performance Order Storage).
+
+= Can I bulk edit product titles and descriptions? =
+Yes! The Premium version lets you set titles, add prefixes/suffixes, or use find & replace across all selected products.
+
+= Can I import prices from a supplier CSV? =
+Yes. Export your current catalog to CSV, edit in Excel or Google Sheets, then import back. Only edited fields are updated.
+
+= What is the difference between Free and Premium? =
+Free: bulk price/stock/tags updates, up to 50 products, 3 undos. Premium: unlimited products, titles, descriptions, images, SKU, CSV import/export, conditional price rules, activity log, 50 undos.
+
+= Can I undo bulk changes? =
+Yes! Free keeps 3 operations, Premium keeps 50. Click Undo to revert any change instantly without page reload.
+
+= Does it work with variable products? =
+Yes! Fully supports simple, variable (with variations), and external products.
+
+= Is there a trial for Premium? =
+Yes — 14-day free trial, no credit card required.
 
 == Changelog ==
+
+= 2.3.0 =
+* NEW: Bulk edit product titles (set, prefix, suffix, find & replace)
+* NEW: Bulk edit short description and full description
+* NEW: Bulk set/remove featured image via media library
+* NEW: CSV Import — import product data from spreadsheet
+* NEW: Export CSV — export filtered product list
+* NEW: Conditional Price Rules — apply price changes based on conditions
+* NEW: Quick Discount — apply % or fixed discount instantly
+* NEW: Advanced filters — price range, stock range, creation date
+* NEW: Activity Log — full audit trail of all bulk changes
+* NEW: Floating action bar with tab indicator
+* IMPROVED: Tab navigation for Prices, Stock, Content, Images
+* IMPROVED: Quick filter chips for fast filtering
 
 = 2.2.1 =
 * FIX: Translated French texts to English

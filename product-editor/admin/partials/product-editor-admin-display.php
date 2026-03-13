@@ -134,7 +134,7 @@ foreach ( General_Helper::get_var( 'search_include_taxonomies', [], FILTER_SANIT
 	<div class="pe-editor-promo-banner">
 		<div class="pe-promo-left">
 			<span class="pe-promo-badge">🎁 <?php esc_html_e( 'Limited Offer', 'product-editor' ); ?></span>
-			<span class="pe-promo-text"><?php esc_html_e( 'Get 15% off Premium with code', 'product-editor' ); ?> <code>PROMO15</code></span>
+			<span class="pe-promo-text"><?php esc_html_e( 'Get 15% off Premium with code', 'product-editor' ); ?> <code>PROMO15</code><button type="button" class="pe-copy-btn" data-code="PROMO15">Copy</button></span>
 		</div>
 		<div class="pe-promo-right">
 			<a href="<?php echo esc_url( pe_fs()->get_upgrade_url() ); ?>" class="pe-promo-cta" target="_blank">
@@ -207,6 +207,36 @@ foreach ( General_Helper::get_var( 'search_include_taxonomies', [], FILTER_SANIT
 	</style>
 	<?php endif; ?>
 
+	<?php
+	// ── Quick filter chips ──────────────────────────────────────
+	$qf_base = admin_url( get_option( 'woocommerce_navigation_enabled', 'no' ) === 'no' ? 'edit.php' : 'admin.php' );
+	$qf_base .= ( get_option( 'woocommerce_navigation_enabled', 'no' ) === 'no' ? '?post_type=product&' : '?' ) . 'page=product-editor';
+	$qf_stock  = General_Helper::get_var( 'stock_status_filter', '' );
+	$qf_type   = General_Helper::get_var( 'type_filter', '' );
+	$qf_onsale = General_Helper::get_var( 'on_sale_filter', '' );
+	?>
+	<div class="pe-quick-filters">
+		<span class="pe-quick-filters-label"><?php esc_html_e( 'Quick filters:', 'product-editor' ); ?></span>
+		<a href="<?php echo esc_url( $qf_base ); ?>" class="pe-qf-chip <?php echo ( ! $qf_stock && ! $qf_type && ! $qf_onsale ) ? 'active' : ''; ?>">
+			<?php esc_html_e( 'All products', 'product-editor' ); ?>
+		</a>
+		<a href="<?php echo esc_url( add_query_arg( array( 'stock_status_filter' => 'outofstock', 'type_filter' => '', 'on_sale_filter' => '' ), $qf_base ) ); ?>" class="pe-qf-chip <?php echo $qf_stock === 'outofstock' ? 'active' : ''; ?>">
+			📦 <?php esc_html_e( 'Out of stock', 'product-editor' ); ?>
+		</a>
+		<a href="<?php echo esc_url( add_query_arg( array( 'stock_status_filter' => 'instock', 'type_filter' => '', 'on_sale_filter' => '' ), $qf_base ) ); ?>" class="pe-qf-chip <?php echo $qf_stock === 'instock' ? 'active' : ''; ?>">
+			✅ <?php esc_html_e( 'In stock', 'product-editor' ); ?>
+		</a>
+		<a href="<?php echo esc_url( add_query_arg( array( 'on_sale_filter' => '1', 'stock_status_filter' => '', 'type_filter' => '' ), $qf_base ) ); ?>" class="pe-qf-chip <?php echo $qf_onsale ? 'active' : ''; ?>">
+			🏷️ <?php esc_html_e( 'On sale', 'product-editor' ); ?>
+		</a>
+		<a href="<?php echo esc_url( add_query_arg( array( 'type_filter' => 'variable', 'stock_status_filter' => '', 'on_sale_filter' => '' ), $qf_base ) ); ?>" class="pe-qf-chip <?php echo $qf_type === 'variable' ? 'active' : ''; ?>">
+			🔀 <?php esc_html_e( 'Variable', 'product-editor' ); ?>
+		</a>
+		<a href="<?php echo esc_url( add_query_arg( array( 'type_filter' => 'simple', 'stock_status_filter' => '', 'on_sale_filter' => '' ), $qf_base ) ); ?>" class="pe-qf-chip <?php echo $qf_type === 'simple' ? 'active' : ''; ?>">
+			📄 <?php esc_html_e( 'Simple', 'product-editor' ); ?>
+		</a>
+	</div>
+
 	<div class="ajax-info">
 		<div class="inner"></div>
 	</div>
@@ -265,8 +295,13 @@ foreach ( General_Helper::get_var( 'search_include_taxonomies', [], FILTER_SANIT
     );
     ?>
     <fieldset>
-		<h2 class="search__h2"><?php esc_html_e( 'Search options', 'product-editor' ); ?></h2>
-        <span class="pe-help-tip" data-tooltip="<?php echo $search_tooltip_text; ?>"></span>
+		<div class="pe-search-header">
+			<h2 class="search__h2"><?php esc_html_e( 'Search &amp; Filters', 'product-editor' ); ?></h2>
+			<span class="pe-active-filters-badge" id="pe-filters-badge"></span>
+			<button type="button" class="pe-search-toggle-btn" id="pe-search-toggle-btn">▼ <?php esc_html_e( 'Show', 'product-editor' ); ?></button>
+			<span class="pe-help-tip" data-tooltip="<?php echo $search_tooltip_text; ?>"></span>
+		</div>
+		<div class="pe-search-body pe-collapsed" id="pe-search-body">
 		<form method="get" action="<?php echo get_option( 'woocommerce_navigation_enabled', 'no' ) === 'no' ? admin_url('edit.php') : admin_url('admin.php')?>">
             <?php if ( get_option( 'woocommerce_navigation_enabled', 'no' ) === 'no' ):?>
 			<input type="hidden" name="post_type" value="product"/>
@@ -341,11 +376,53 @@ foreach ( General_Helper::get_var( 'search_include_taxonomies', [], FILTER_SANIT
                     />
                 </label>
             </div>
+
+            <?php /* ── Advanced filters (Feature 3) ── */ ?>
+            <fieldset class="search-fieldset" style="border:1px solid #ddd;padding:10px 15px;margin-top:10px">
+                <legend><?php esc_html_e( 'Advanced filters', 'product-editor' ); ?></legend>
+                <div class="form-group">
+                    <label><?php esc_html_e( 'Price (regular) min:', 'product-editor' ); ?>&nbsp;
+                        <input type="number" name="price_min" step="0.01" min="0"
+                               value="<?php echo esc_attr( General_Helper::get_var( 'price_min', '' ) ); ?>"
+                               placeholder="0.00" style="width:90px">
+                    </label>
+                    &nbsp;&mdash;&nbsp;
+                    <label><?php esc_html_e( 'max:', 'product-editor' ); ?>&nbsp;
+                        <input type="number" name="price_max" step="0.01" min="0"
+                               value="<?php echo esc_attr( General_Helper::get_var( 'price_max', '' ) ); ?>"
+                               placeholder="9999.00" style="width:90px">
+                    </label>
+                    &nbsp;&nbsp;&nbsp;&nbsp;
+                    <label><?php esc_html_e( 'Stock min:', 'product-editor' ); ?>&nbsp;
+                        <input type="number" name="stock_min" step="1"
+                               value="<?php echo esc_attr( General_Helper::get_var( 'stock_min', '' ) ); ?>"
+                               placeholder="0" style="width:70px">
+                    </label>
+                    &nbsp;&mdash;&nbsp;
+                    <label><?php esc_html_e( 'max:', 'product-editor' ); ?>&nbsp;
+                        <input type="number" name="stock_max" step="1"
+                               value="<?php echo esc_attr( General_Helper::get_var( 'stock_max', '' ) ); ?>"
+                               placeholder="999" style="width:70px">
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label><?php esc_html_e( 'Created after:', 'product-editor' ); ?>&nbsp;
+                        <input type="date" name="date_created_min"
+                               value="<?php echo esc_attr( General_Helper::get_var( 'date_created_min', '' ) ); ?>">
+                    </label>
+                    &nbsp;&nbsp;
+                    <label><?php esc_html_e( 'Created before:', 'product-editor' ); ?>&nbsp;
+                        <input type="date" name="date_created_max"
+                               value="<?php echo esc_attr( General_Helper::get_var( 'date_created_max', '' ) ); ?>">
+                    </label>
+                </div>
+            </fieldset>
+
             <br/>
 			<input type="submit" value="<?php esc_html_e( 'Search', 'product-editor' ); ?>" class="button">
             <a href="javascript://" class="reset_form button button-link-delete"><?php esc_html_e( 'Reset', 'product-editor' ); ?></a>
 		</form>
-
+		</div><!-- /.pe-search-body -->
 	</fieldset>
 	<br>
 	<hr/>
@@ -565,6 +642,83 @@ foreach ( General_Helper::get_var( 'search_include_taxonomies', [], FILTER_SANIT
                 <input type="number" name="_weight" step="0.01" autocomplete="off" <?php echo ! $is_premium ? 'disabled placeholder="' . esc_attr__( 'Premium Feature', 'product-editor' ) . '"' : ''; ?>>
             </div>
 
+            <?php /* ── Feature 4: Bulk Title / Description (Premium) ── */ ?>
+            <!-- Name/Title - PREMIUM -->
+            <div class="form-group pe-premium-field <?php echo ! $is_premium ? 'pe-premium-locked' : ''; ?>">
+                <label>
+                    <span class="title"><?php esc_html_e( 'Title (Name):', 'product-editor' ); ?></span>
+                    <?php if ( ! $is_premium ): ?>
+                        <span class="pe-premium-badge">⭐ PREMIUM</span>
+                    <?php endif; ?>
+                </label>
+                <select name="change_name" <?php echo ! $is_premium ? 'disabled' : ''; ?>>
+                    <option value=""><?php esc_html_e( '— No change —', 'product-editor' ); ?></option>
+                    <option value="1"><?php esc_html_e( 'Set to:', 'product-editor' ); ?></option>
+                    <option value="2"><?php esc_html_e( 'Add prefix:', 'product-editor' ); ?></option>
+                    <option value="3"><?php esc_html_e( 'Add suffix:', 'product-editor' ); ?></option>
+                    <option value="4"><?php esc_html_e( 'Find and replace:', 'product-editor' ); ?></option>
+                </select>
+                <input type="text" name="_name" placeholder="<?php echo ! $is_premium ? esc_attr__( 'Premium Feature', 'product-editor' ) : esc_attr__( 'New value / replacement', 'product-editor' ); ?>" autocomplete="off" <?php echo ! $is_premium ? 'disabled' : ''; ?>>
+                <input type="text" name="_name_find" placeholder="<?php esc_attr_e( 'Find (for replace)', 'product-editor' ); ?>" autocomplete="off" <?php echo ! $is_premium ? 'disabled' : ''; ?>>
+            </div>
+
+            <!-- Short Description - PREMIUM -->
+            <div class="form-group pe-premium-field <?php echo ! $is_premium ? 'pe-premium-locked' : ''; ?>">
+                <label>
+                    <span class="title"><?php esc_html_e( 'Short Description:', 'product-editor' ); ?></span>
+                    <?php if ( ! $is_premium ): ?>
+                        <span class="pe-premium-badge">⭐ PREMIUM</span>
+                    <?php endif; ?>
+                </label>
+                <select name="change_short_description" <?php echo ! $is_premium ? 'disabled' : ''; ?>>
+                    <option value=""><?php esc_html_e( '— No change —', 'product-editor' ); ?></option>
+                    <option value="1"><?php esc_html_e( 'Set to:', 'product-editor' ); ?></option>
+                    <option value="2"><?php esc_html_e( 'Append:', 'product-editor' ); ?></option>
+                    <option value="3"><?php esc_html_e( 'Clear (set empty)', 'product-editor' ); ?></option>
+                </select>
+                <textarea name="_short_description" rows="2" style="vertical-align:top;width:300px" <?php echo ! $is_premium ? 'disabled placeholder="' . esc_attr__( 'Premium Feature', 'product-editor' ) . '"' : ''; ?>></textarea>
+            </div>
+
+            <!-- Full Description - PREMIUM -->
+            <div class="form-group pe-premium-field <?php echo ! $is_premium ? 'pe-premium-locked' : ''; ?>">
+                <label>
+                    <span class="title"><?php esc_html_e( 'Full Description:', 'product-editor' ); ?></span>
+                    <?php if ( ! $is_premium ): ?>
+                        <span class="pe-premium-badge">⭐ PREMIUM</span>
+                    <?php endif; ?>
+                </label>
+                <select name="change_description" <?php echo ! $is_premium ? 'disabled' : ''; ?>>
+                    <option value=""><?php esc_html_e( '— No change —', 'product-editor' ); ?></option>
+                    <option value="1"><?php esc_html_e( 'Set to:', 'product-editor' ); ?></option>
+                    <option value="2"><?php esc_html_e( 'Append:', 'product-editor' ); ?></option>
+                    <option value="3"><?php esc_html_e( 'Clear (set empty)', 'product-editor' ); ?></option>
+                </select>
+                <textarea name="_description" rows="3" style="vertical-align:top;width:300px" <?php echo ! $is_premium ? 'disabled placeholder="' . esc_attr__( 'Premium Feature', 'product-editor' ) . '"' : ''; ?>></textarea>
+            </div>
+
+            <?php /* ── Feature 1: Bulk Image Management (Premium) ── */ ?>
+            <!-- Featured Image - PREMIUM -->
+            <div class="form-group pe-premium-field <?php echo ! $is_premium ? 'pe-premium-locked' : ''; ?>">
+                <label>
+                    <span class="title"><?php esc_html_e( 'Featured Image:', 'product-editor' ); ?></span>
+                    <?php if ( ! $is_premium ): ?>
+                        <span class="pe-premium-badge">⭐ PREMIUM</span>
+                    <?php endif; ?>
+                </label>
+                <select name="change_featured_image" id="pe-change-image-action" <?php echo ! $is_premium ? 'disabled' : ''; ?>>
+                    <option value=""><?php esc_html_e( '— No change —', 'product-editor' ); ?></option>
+                    <option value="1"><?php esc_html_e( 'Set image (attachment ID):', 'product-editor' ); ?></option>
+                    <option value="2"><?php esc_html_e( 'Remove featured image', 'product-editor' ); ?></option>
+                </select>
+                <?php if ( $is_premium ) : ?>
+                    <input type="number" name="_featured_image_id" id="pe-featured-image-id" placeholder="<?php esc_attr_e( 'Attachment ID', 'product-editor' ); ?>" min="1" style="width:130px" autocomplete="off">
+                    <button type="button" class="button" id="pe-choose-image"><?php esc_html_e( 'Choose from Library', 'product-editor' ); ?></button>
+                    <span id="pe-image-preview" style="display:inline-block;vertical-align:middle;margin-left:8px"></span>
+                <?php else : ?>
+                    <input type="number" name="_featured_image_id" placeholder="<?php esc_attr_e( 'Premium Feature', 'product-editor' ); ?>" disabled style="width:130px">
+                <?php endif; ?>
+            </div>
+
             <div class="form-group">
                 <label>
                     <input type="checkbox" name="not_processing_zero_price_products">
@@ -583,9 +737,98 @@ foreach ( General_Helper::get_var( 'search_include_taxonomies', [], FILTER_SANIT
                 <a href="javascript://" class="do_reverse" style="display: none;"></a>
                 <?php endif; ?>
 			</div>
-		</fieldset>
-	</form>
-	<br><br>
+        </fieldset>
+    </form>
+
+    <?php /* ── Feature 5: Conditional Price Rules (Premium) ── */ ?>
+    <br>
+    <form method="post" action="<?php echo admin_url( 'admin-post.php' ); ?>" id="pe-price-rules-form">
+        <input type="hidden" name="action" value="pe_apply_price_rules">
+        <input type="hidden" name="nonce" value="<?php echo $nonce; ?>">
+        <input type="hidden" name="ids" id="pe-rules-ids" value="">
+        <fieldset class="pe-premium-field <?php echo ! $is_premium ? 'pe-premium-locked' : ''; ?>">
+            <h2>
+                <?php esc_html_e( 'Conditional Price Rules', 'product-editor' ); ?>
+                <?php if ( ! $is_premium ): ?>
+                    <span class="pe-premium-badge">⭐ PREMIUM</span>
+                <?php endif; ?>
+            </h2>
+            <p class="description"><?php esc_html_e( 'Apply a price change only when a condition is met on the selected products.', 'product-editor' ); ?></p>
+            <div class="form-group">
+                <label><?php esc_html_e( 'IF', 'product-editor' ); ?>&nbsp;
+                    <select name="rule_condition_field" <?php echo ! $is_premium ? 'disabled' : ''; ?>>
+                        <option value="stock_quantity"><?php esc_html_e( 'Stock quantity', 'product-editor' ); ?></option>
+                        <option value="regular_price"><?php esc_html_e( 'Regular price', 'product-editor' ); ?></option>
+                        <option value="sale_price"><?php esc_html_e( 'Sale price', 'product-editor' ); ?></option>
+                    </select>
+                </label>&nbsp;
+                <select name="rule_condition_operator" <?php echo ! $is_premium ? 'disabled' : ''; ?>>
+                    <option value=">"><?php esc_html_e( '> (greater than)', 'product-editor' ); ?></option>
+                    <option value=">="><?php esc_html_e( '>= (at least)', 'product-editor' ); ?></option>
+                    <option value="<"><?php esc_html_e( '< (less than)', 'product-editor' ); ?></option>
+                    <option value="<="><?php esc_html_e( '<= (at most)', 'product-editor' ); ?></option>
+                    <option value="=="><?php esc_html_e( '== (equal to)', 'product-editor' ); ?></option>
+                </select>&nbsp;
+                <input type="number" name="rule_condition_value" step="0.01" placeholder="0" style="width:80px" <?php echo ! $is_premium ? 'disabled' : ''; ?>>
+            </div>
+            <div class="form-group">
+                <label><?php esc_html_e( 'THEN change regular price:', 'product-editor' ); ?>&nbsp;
+                    <select name="rule_price_action" <?php echo ! $is_premium ? 'disabled' : ''; ?>>
+                        <option value="1"><?php esc_html_e( 'Set to:', 'product-editor' ); ?></option>
+                        <option value="2"><?php esc_html_e( 'Increase by (fixed or %):', 'product-editor' ); ?></option>
+                        <option value="3"><?php esc_html_e( 'Decrease by (fixed or %):', 'product-editor' ); ?></option>
+                        <option value="4"><?php esc_html_e( 'Multiply by:', 'product-editor' ); ?></option>
+                    </select>
+                </label>&nbsp;
+                <input type="text" name="rule_price_value" placeholder="10%" style="width:80px" autocomplete="off" <?php echo ! $is_premium ? 'disabled' : ''; ?>>
+            </div>
+            <div class="form-group">
+                <?php if ( $is_premium ) : ?>
+                    <button type="button" id="pe-apply-rules-btn" class="button button-primary">
+                        <?php esc_html_e( 'Apply rule to selected products', 'product-editor' ); ?>
+                    </button>
+                <?php else : ?>
+                    <button type="button" class="button" disabled><?php esc_html_e( 'Apply rule to selected products', 'product-editor' ); ?></button>
+                    <a href="<?php echo esc_url( Product_Editor_License::get_upgrade_url() ); ?>" class="button button-primary" target="_blank"><?php esc_html_e( 'Upgrade to unlock →', 'product-editor' ); ?></a>
+                <?php endif; ?>
+            </div>
+        </fieldset>
+    </form>
+
+    <?php /* ── Feature 2 & 6: Export CSV / Import CSV ── */ ?>
+    <br>
+    <fieldset style="padding:12px 15px;border:1px solid #ddd">
+        <h2><?php esc_html_e( 'Import / Export', 'product-editor' ); ?></h2>
+        <div class="form-group" style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+            <form method="post" action="<?php echo admin_url( 'admin-post.php' ); ?>" id="pe-export-form">
+                <input type="hidden" name="action" value="pe_export_csv">
+                <input type="hidden" name="nonce" value="<?php echo $nonce; ?>">
+                <?php /* Pass current search filters to export */ ?>
+                <?php foreach ( $_GET as $k => $v ) : ?>
+                    <?php if ( in_array( $k, array( 'page', 'action', 'nonce' ), true ) ) continue; ?>
+                    <?php if ( is_scalar( $v ) ) : ?>
+                        <input type="hidden" name="<?php echo esc_attr( $k ); ?>" value="<?php echo esc_attr( $v ); ?>">
+                    <?php endif; ?>
+                <?php endforeach; ?>
+                <button type="submit" class="button">
+                    ⬇ <?php esc_html_e( 'Export to CSV', 'product-editor' ); ?>
+                    <?php if ( ! $is_premium ) echo '<small> (' . esc_html__( 'basic columns', 'product-editor' ) . ')</small>'; ?>
+                </button>
+            </form>
+
+            <?php if ( $is_premium ) : ?>
+                <a href="<?php echo esc_url( admin_url( 'edit.php?post_type=product&page=product-editor-csv-import' ) ); ?>" class="button">
+                    ⬆ <?php esc_html_e( 'Import from CSV', 'product-editor' ); ?>
+                </a>
+            <?php else : ?>
+                <a href="<?php echo esc_url( Product_Editor_License::get_upgrade_url() ); ?>" class="button pe-premium-badge" target="_blank">
+                    ⬆ <?php esc_html_e( 'Import from CSV', 'product-editor' ); ?> ⭐ PREMIUM
+                </a>
+            <?php endif; ?>
+        </div>
+    </fieldset>
+    <br>
+
 	<div class="tablenav">
 		<?php
 		$page_links = paginate_links(
@@ -632,6 +875,7 @@ foreach ( General_Helper::get_var( 'search_include_taxonomies', [], FILTER_SANIT
 		<tr>
 			<th class="check-column-t">
 				<label><?php esc_html_e( 'Base', 'product-editor' ); ?><br/><input class="cb-pr-all" type="checkbox"></label>
+				<span class="pe-sel-count" id="pe-sel-count"></span>
 			</th>
 			<th class="check-column-t">
 				<label><?php esc_html_e( 'Variations', 'product-editor' ); ?><br/><input class="cb-vr-all" type="checkbox"></label>
@@ -681,6 +925,12 @@ foreach ( General_Helper::get_var( 'search_include_taxonomies', [], FILTER_SANIT
 			<th scope="col" class="td-weight manage-column">
 				<span><?php esc_html_e( 'Weight', 'product-editor' ); ?></span>
 			</th>
+		<th scope="col" class="td-thumbnail manage-column">
+				<span><?php esc_html_e( 'Image', 'product-editor' ); ?></span>
+			</th>
+		<th scope="col" class="td-short-description manage-column">
+				<span><?php esc_html_e( 'Short Description', 'product-editor' ); ?></span>
+			</th>
 
 		</tr>
 		</thead>
@@ -691,6 +941,67 @@ foreach ( General_Helper::get_var( 'search_include_taxonomies', [], FILTER_SANIT
 		</tbody>
 	</table>
 </div>
+
+<!-- ── Floating action bar ────────────────────────────── -->
+<div id="pe-float-bar" class="pe-float-bar">
+	<span class="pe-float-count" id="pe-float-count">0 <?php esc_html_e( 'selected', 'product-editor' ); ?></span>
+	<button type="submit" form="bulk-changes" class="button pe-float-apply">
+		<?php esc_html_e( 'Apply to Selected', 'product-editor' ); ?> →
+	</button>
+	<button type="button" id="pe-float-clear" class="pe-float-clear">✕ <?php esc_html_e( 'Clear', 'product-editor' ); ?></button>
+	<span class="pe-float-spacer"></span>
+	<span class="pe-float-tab-hint" id="pe-float-tab-hint"></span>
+	<?php if ( $is_free_user ) : ?>
+		<a href="<?php echo esc_url( pe_fs()->get_upgrade_url() ); ?>" class="pe-float-upgrade" target="_blank">
+			⭐ <?php esc_html_e( 'Go Pro', 'product-editor' ); ?> →
+		</a>
+	<?php endif; ?>
+</div>
+
+<?php if ( $is_free_user === false ) : /* premium JS */ ?>
+<script>
+jQuery(document).ready(function($) {
+    // ── Media Library picker for featured image ──────────────
+    var mediaFrame;
+    $('#pe-choose-image').on('click', function(e) {
+        e.preventDefault();
+        if (mediaFrame) { mediaFrame.open(); return; }
+        mediaFrame = wp.media({ title: '<?php echo esc_js( __( 'Select Featured Image', 'product-editor' ) ); ?>', multiple: false, library: { type: 'image' }, button: { text: '<?php echo esc_js( __( 'Use this image', 'product-editor' ) ); ?>' } });
+        mediaFrame.on('select', function() {
+            var att = mediaFrame.state().get('selection').first().toJSON();
+            $('#pe-featured-image-id').val(att.id);
+            var url = att.sizes && att.sizes.thumbnail ? att.sizes.thumbnail.url : att.url;
+            $('#pe-image-preview').html('<img src="' + url + '" style="width:50px;height:50px;object-fit:cover;border-radius:4px;border:1px solid #ddd">');
+        });
+        mediaFrame.open();
+    });
+    $('#pe-change-image-action').on('change', function() {
+        $('#pe-featured-image-id, #pe-choose-image, #pe-image-preview').toggle($(this).val() === '1');
+    }).trigger('change');
+
+    // ── Price Rules — collect selected IDs then submit ────────
+    $('#pe-apply-rules-btn').on('click', function() {
+        var ids = [];
+        $('input.cb-pr:checked, input.cb-vr:checked').each(function() {
+            ids.push($(this).val());
+        });
+        if (!ids.length) { alert('<?php echo esc_js( __( 'Please select at least one product.', 'product-editor' ) ); ?>'); return; }
+        $('#pe-rules-ids').val(ids.join('|'));
+        var $btn = $(this);
+        $btn.prop('disabled', true).text('<?php echo esc_js( __( 'Applying…', 'product-editor' ) ); ?>');
+        var formData = $('#pe-price-rules-form').serialize();
+        $.post('<?php echo admin_url( 'admin-post.php' ); ?>', formData, function(resp) {
+            $btn.prop('disabled', false).text('<?php echo esc_js( __( 'Apply rule to selected products', 'product-editor' ) ); ?>');
+            alert(resp.message || '<?php echo esc_js( __( 'Done', 'product-editor' ) ); ?>');
+            if (resp.applied > 0) location.reload();
+        }, 'json').fail(function(xhr) {
+            $btn.prop('disabled', false).text('<?php echo esc_js( __( 'Apply rule to selected products', 'product-editor' ) ); ?>');
+            try { alert(JSON.parse(xhr.responseText).message); } catch(e) { alert('<?php echo esc_js( __( 'Error', 'product-editor' ) ); ?>'); }
+        });
+    });
+});
+</script>
+<?php endif; ?>
 
 <!-- Modal Upgrade CTA -->
 <div id="pe-upgrade-modal" class="pe-modal" style="display:none;">
@@ -713,6 +1024,11 @@ foreach ( General_Helper::get_var( 'search_include_taxonomies', [], FILTER_SANIT
 			<li><span class="dashicons dashicons-yes-alt"></span> <?php esc_html_e( 'Unlimited bulk editing', 'product-editor' ); ?></li>
 			<li><span class="dashicons dashicons-yes-alt"></span> <?php esc_html_e( 'Schedule price changes', 'product-editor' ); ?></li>
 			<li><span class="dashicons dashicons-yes-alt"></span> <?php esc_html_e( '50 undo operations', 'product-editor' ); ?></li>
+			<li><span class="dashicons dashicons-yes-alt"></span> <?php esc_html_e( 'Bulk title &amp; description editing', 'product-editor' ); ?></li>
+			<li><span class="dashicons dashicons-yes-alt"></span> <?php esc_html_e( 'Bulk image management', 'product-editor' ); ?></li>
+			<li><span class="dashicons dashicons-yes-alt"></span> <?php esc_html_e( 'CSV import &amp; full export', 'product-editor' ); ?></li>
+			<li><span class="dashicons dashicons-yes-alt"></span> <?php esc_html_e( 'Conditional price rules', 'product-editor' ); ?></li>
+			<li><span class="dashicons dashicons-yes-alt"></span> <?php esc_html_e( 'Activity log', 'product-editor' ); ?></li>
 			<li><span class="dashicons dashicons-yes-alt"></span> <?php esc_html_e( 'Priority support', 'product-editor' ); ?></li>
 		</ul>
 
@@ -1087,4 +1403,163 @@ foreach ( General_Helper::get_var( 'search_include_taxonomies', [], FILTER_SANIT
 	});
 
 })(jQuery);
+</script>
+
+<!-- ═══════════════════════════════════════════════════════
+     UX 2.4 — Tabs · Floating bar · Search · Quick filters
+     ═══════════════════════════════════════════════════════ -->
+<script>
+jQuery(document).ready(function($) {
+
+    /* ── 1. TABBED BULK ACTIONS ─────────────────────────────── */
+    var tabDefs = [
+        { id: 'prices',  label: '💰 <?php echo esc_js( __( 'Prices', 'product-editor' ) ); ?>',
+          fields: ['change_regular_price','change_sale_price','change_date_on_sale_from','change_date_on_sale_to','change_quick_discount'] },
+        { id: 'stock',   label: '📦 <?php echo esc_js( __( 'Stock', 'product-editor' ) ); ?>',
+          fields: ['change_stock_quantity','change_stock_status','change_manage_stock'] },
+        { id: 'content', label: '📝 <?php echo esc_js( __( 'Content', 'product-editor' ) ); ?>',
+          fields: ['change_tags','change_categories','change_sku','change_name','change_short_description','change_description'] },
+        { id: 'images',  label: '🖼 <?php echo esc_js( __( 'Images', 'product-editor' ) ); ?>',
+          fields: ['change_featured_image'] }
+    ];
+
+    var $fieldset = $('#bulk-changes fieldset');
+    var $groups   = $fieldset.find('> .form-group');
+    var activeTab = localStorage.getItem('pe_active_tab') || 'prices';
+
+    // Tag each group with its tab
+    $groups.each(function() {
+        var $g = $(this);
+        var matched = false;
+        tabDefs.forEach(function(tab) {
+            tab.fields.forEach(function(f) {
+                if ($g.find('[name="' + f + '"]').length) {
+                    $g.attr('data-pe-tab', tab.id);
+                    matched = true;
+                }
+            });
+        });
+        if (!matched) $g.attr('data-pe-tab', 'always');
+    });
+
+    // Build nav
+    var $nav = $('<div class="pe-tabs-nav" role="tablist"></div>');
+    tabDefs.forEach(function(tab) {
+        var tabGroups = $groups.filter('[data-pe-tab="' + tab.id + '"]');
+        var allLocked = tabGroups.length > 0 && tabGroups.filter('.pe-premium-locked').length === tabGroups.length;
+        var lockIcon = allLocked ? '<span class="pe-tab-lock">🔒</span>' : '';
+        $nav.append(
+            '<button type="button" class="pe-tab-btn" role="tab" data-tab="' + tab.id + '">' +
+            tab.label + lockIcon + '</button>'
+        );
+    });
+    $fieldset.find('h2').after($nav);
+
+    function switchTab(id) {
+        activeTab = id;
+        localStorage.setItem('pe_active_tab', id);
+        $('.pe-tab-btn').removeClass('active').attr('aria-selected', 'false');
+        $('.pe-tab-btn[data-tab="' + id + '"]').addClass('active').attr('aria-selected', 'true');
+        $groups.each(function() {
+            var t = $(this).attr('data-pe-tab');
+            $(this).toggle(t === 'always' || t === id);
+        });
+        // Update floating bar hint
+        var label = '';
+        tabDefs.forEach(function(tab) { if (tab.id === id) label = tab.label; });
+        $('#pe-float-tab-hint').text('<?php echo esc_js( __( 'Tab:', 'product-editor' ) ); ?> ' + label);
+    }
+
+    $nav.on('click', '.pe-tab-btn', function() { switchTab($(this).attr('data-tab')); });
+    switchTab(activeTab);
+
+    /* ── 2. FLOATING ACTION BAR ─────────────────────────────── */
+    var $floatBar   = $('#pe-float-bar');
+    var $floatCount = $('#pe-float-count');
+    var $selCount   = $('#pe-sel-count');
+
+    function updateFloatBar() {
+        var n = $('input.cb-pr:checked, input.cb-vr:checked').length;
+        var label = n === 1
+            ? '1 <?php echo esc_js( __( 'product selected', 'product-editor' ) ); ?>'
+            : n + ' <?php echo esc_js( __( 'products selected', 'product-editor' ) ); ?>';
+
+        if (n > 0) {
+            $floatCount.text(label);
+            $floatBar.addClass('visible');
+            $selCount.text(n).addClass('visible');
+        } else {
+            $floatBar.removeClass('visible');
+            $selCount.removeClass('visible');
+        }
+
+        // Row highlight
+        $('table.pe-product-table tbody tr').each(function() {
+            var checked = $(this).find('input.cb-pr:checked, input.cb-vr:checked').length > 0;
+            $(this).toggleClass('pe-row-selected', checked);
+        });
+    }
+
+    $(document).on('change', 'input.cb-pr, input.cb-vr, .cb-pr-all, .cb-vr-all, .cb-vr-all-parent', function() {
+        setTimeout(updateFloatBar, 15);
+    });
+
+    $('#pe-float-clear').on('click', function() {
+        $('input.cb-pr, input.cb-vr, input.cb-pr-all, input.cb-vr-all').prop('checked', false);
+        updateFloatBar();
+    });
+
+    /* ── 3. COLLAPSIBLE SEARCH PANEL ────────────────────────── */
+    var $searchBody  = $('#pe-search-body');
+    var $toggleBtn   = $('#pe-search-toggle-btn');
+    var $filterBadge = $('#pe-filters-badge');
+    var searchOpen   = false;
+
+    // Count active filters from URL
+    var params = new URLSearchParams(window.location.search);
+    var filterKeys = ['product_cats','tags','statuses','s','price_min','price_max',
+                      'stock_min','stock_max','date_created_min','date_created_max'];
+    var activeFilters = filterKeys.filter(function(k) {
+        return params.get(k) && params.get(k).trim() !== '';
+    }).length;
+
+    if (activeFilters > 0) {
+        $filterBadge.text(activeFilters).addClass('visible');
+        // Keep open if filters are active
+        searchOpen = true;
+        $searchBody.removeClass('pe-collapsed');
+        $toggleBtn.text('▲ <?php echo esc_js( __( 'Hide', 'product-editor' ) ); ?>');
+    }
+
+    $toggleBtn.on('click', function() {
+        searchOpen = !searchOpen;
+        $searchBody.toggleClass('pe-collapsed', !searchOpen);
+        $(this).text(searchOpen
+            ? '▲ <?php echo esc_js( __( 'Hide', 'product-editor' ) ); ?>'
+            : '▼ <?php echo esc_js( __( 'Show', 'product-editor' ) ); ?>'
+        );
+    });
+
+    /* ── 4. COPY PROMO CODE ─────────────────────────────────── */
+    $(document).on('click', '.pe-copy-btn', function() {
+        var $btn = $(this);
+        var code = $btn.data('code');
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(code).then(function() {
+                $btn.addClass('pe-copied').text('✓');
+                setTimeout(function() { $btn.removeClass('pe-copied').text('Copy'); }, 2000);
+            });
+        }
+    });
+
+    /* ── 5. PREMIUM LOCKED FIELDS → open modal ──────────────── */
+    $(document).on('click', '.pe-premium-locked', function(e) {
+        if ($(e.target).is('a, button, select, input, textarea')) return;
+        peShowUpgradeModal();
+    });
+
+    /* ── 6. QUICK FILTERS — pass through to admin.php ─────────
+       The links are already built in PHP with correct params.    */
+
+});
 </script>
