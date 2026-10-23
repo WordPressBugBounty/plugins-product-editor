@@ -1,5 +1,5 @@
 === Product Editor Pro - WooCommerce Bulk Edit: Prices, Stock, Images, Titles, CSV Import & More ===
-Contributors: speitzako-app
+Contributors: speitzako
 Tags: woocommerce, bulk edit, stock management, price editor, csv import
 Stable tag: 2.3.1
 Requires PHP: 7.4
